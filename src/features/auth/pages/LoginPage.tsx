@@ -3,7 +3,10 @@ import { Link, useNavigate } from 'react-router';
 import { Eye, EyeOff, AlertTriangle } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useDispatch } from 'react-redux';
 
+import type { AppDispatch } from '../../../app/store';
+import { setLoginCredentials } from '../authSlice';
 import { AuthLogo } from '../components/AuthLogo';
 import { loginSchema, type LoginFormValues } from '../schemas/login.schema';
 import { useLoginMutation } from '../api/authApi';
@@ -45,6 +48,7 @@ export function LoginPage() {
     const [showPassword, setShowPassword] = useState(false);
     const [serverError, setServerError] = useState<string | null>(null);
     const [login, { isLoading }] = useLoginMutation();
+    const dispatch = useDispatch<AppDispatch>();
 
     const {
         register,
@@ -64,8 +68,7 @@ export function LoginPage() {
         try {
             const response = await login(values).unwrap();
 
-            localStorage.setItem('accessToken', response.accessToken);
-            localStorage.setItem('authUser', JSON.stringify(response.user));
+            dispatch(setLoginCredentials(response));
 
             navigate('/packages');
         } catch (error) {

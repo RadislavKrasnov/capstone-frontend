@@ -1,10 +1,6 @@
 import { z } from 'zod';
 
-const optionalText = z
-    .string()
-    .trim()
-    .optional()
-    .transform((value) => value || undefined);
+const optionalText = z.string().trim().optional();
 
 export const signupAgencyOwnerSchema = z.object({
     agency: z.object({
@@ -13,6 +9,7 @@ export const signupAgencyOwnerSchema = z.object({
             .trim()
             .min(1, 'Agency name is required')
             .max(150, 'Agency name is too long'),
+
         slug: z
             .string()
             .trim()
@@ -22,16 +19,18 @@ export const signupAgencyOwnerSchema = z.object({
                 /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
                 'Use lowercase letters, numbers, and hyphens only',
             ),
+
         phoneNumber: optionalText,
+
         website: z
             .string()
             .trim()
             .optional()
-            .transform((value) => value || undefined)
             .refine(
                 (value) => !value || /^https?:\/\/.+\..+/.test(value),
                 'Enter a valid website URL, for example https://travel-pro.com',
             ),
+
         country: optionalText,
         city: optionalText,
     }),

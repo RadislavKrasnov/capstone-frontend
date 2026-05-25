@@ -1,6 +1,8 @@
 import axios, { AxiosError, type AxiosRequestConfig } from 'axios';
 import type { BaseQueryFn } from '@reduxjs/toolkit/query';
 
+import type { RootState } from '../../app/store';
+
 type AxiosBaseQueryArgs = {
     url: string;
     method?: AxiosRequestConfig['method'];
@@ -12,9 +14,10 @@ export const axiosBaseQuery =
     (
         { baseUrl }: { baseUrl: string } = { baseUrl: '' },
     ): BaseQueryFn<AxiosBaseQueryArgs, unknown, unknown> =>
-        async ({ url, method = 'GET', data, params }) => {
+        async ({ url, method = 'GET', data, params }, api) => {
             try {
-                const token = localStorage.getItem('accessToken');
+                const state = api.getState() as RootState;
+                const token = state.auth.accessToken;
 
                 const result = await axios({
                     url: baseUrl + url,

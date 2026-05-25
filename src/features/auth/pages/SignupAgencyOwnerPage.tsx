@@ -3,13 +3,22 @@ import { Link, useNavigate } from 'react-router';
 import { AlertTriangle, Eye, EyeOff } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useDispatch } from 'react-redux';
 
+import type { AppDispatch } from '../../../app/store';
+import { setSignupAgencyOwnerCredentials } from '../authSlice';
 import { AuthLogo } from '../components/AuthLogo';
 import { useSignupAgencyOwnerMutation } from '../api/authApi';
 import {
     signupAgencyOwnerSchema,
     type SignupAgencyOwnerFormValues,
 } from '../schemas/signup-agency-owner.schema';
+
+function emptyToUndefined(value?: string) {
+    const trimmedValue = value?.trim();
+
+    return trimmedValue ? trimmedValue : undefined;
+}
 
 function getErrorMessage(error: unknown): string {
     if (typeof error === 'object' && error !== null && 'data' in error) {
@@ -50,6 +59,7 @@ export function SignupAgencyOwnerPage() {
     const [showPassword, setShowPassword] = useState(false);
     const [serverError, setServerError] = useState<string | null>(null);
     const [signupAgencyOwner, { isLoading }] = useSignupAgencyOwnerMutation();
+    const dispatch = useDispatch<AppDispatch>();
 
     const {
         register,
@@ -92,11 +102,24 @@ export function SignupAgencyOwnerPage() {
         setServerError(null);
 
         try {
-            const response = await signupAgencyOwner(values).unwrap();
+            const response = await signupAgencyOwner({
+                agency: {
+                    name: values.agency.name.trim(),
+                    slug: values.agency.slug.trim(),
+                    phoneNumber: emptyToUndefined(values.agency.phoneNumber),
+                    website: emptyToUndefined(values.agency.website),
+                    country: emptyToUndefined(values.agency.country),
+                    city: emptyToUndefined(values.agency.city),
+                },
+                email: values.email.trim(),
+                username: values.username.trim(),
+                password: values.password,
+                firstName: values.firstName.trim(),
+                lastName: values.lastName.trim(),
+                phoneNumber: emptyToUndefined(values.phoneNumber),
+            }).unwrap();
 
-            localStorage.setItem('accessToken', response.accessToken);
-            localStorage.setItem('authUser', JSON.stringify(response.user));
-            localStorage.setItem('authAgency', JSON.stringify(response.agency));
+            dispatch(setSignupAgencyOwnerCredentials(response));
 
             navigate('/packages');
         } catch (error) {
