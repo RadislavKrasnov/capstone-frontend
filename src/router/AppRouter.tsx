@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router';
 
 import { AuthLayout } from '../layouts/AuthLayout';
 import { LoginPage } from '../features/auth/pages/LoginPage';
+import { SignupAgencyOwnerPage } from '../features/auth/pages/SignupAgencyOwnerPage';
 
 function PlaceholderPage({ title }: { title: string }) {
     return (
@@ -34,7 +35,7 @@ export function AppRouter() {
                 path="/signup"
                 element={
                     <AuthLayout>
-                        <PlaceholderPage title="Create account" />
+                        <SignupAgencyOwnerPage />
                     </AuthLayout>
                 }
             />

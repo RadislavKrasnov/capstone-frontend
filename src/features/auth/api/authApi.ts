@@ -4,6 +4,8 @@ import type {
     LoginResponse,
     LogoutResponse,
     RefreshResponse,
+    SignupAgencyOwnerRequest,
+    SignupAgencyOwnerResponse,
 } from '../types/auth.types';
 
 export const authApi = baseApi.injectEndpoints({
@@ -15,6 +17,18 @@ export const authApi = baseApi.injectEndpoints({
                 data: body,
             }),
             invalidatesTags: ['Auth', 'User'],
+        }),
+
+        signupAgencyOwner: builder.mutation<
+            SignupAgencyOwnerResponse,
+            SignupAgencyOwnerRequest
+        >({
+            query: (body) => ({
+                url: '/auth/signup-agency-owner',
+                method: 'POST',
+                data: body,
+            }),
+            invalidatesTags: ['Auth', 'User', 'Agency'],
         }),
 
         refresh: builder.mutation<RefreshResponse, void>({
@@ -37,6 +51,7 @@ export const authApi = baseApi.injectEndpoints({
 
 export const {
     useLoginMutation,
+    useSignupAgencyOwnerMutation,
     useRefreshMutation,
     useLogoutMutation,
 } = authApi;
