@@ -4,6 +4,7 @@ import { AlertTriangle, Eye, EyeOff } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 
 import type { AppDispatch } from '../../../app/store';
 import { setSignupAgencyOwnerCredentials } from '../authSlice';
@@ -20,7 +21,7 @@ function emptyToUndefined(value?: string) {
     return trimmedValue ? trimmedValue : undefined;
 }
 
-function getErrorMessage(error: unknown): string {
+function getErrorMessage(error: unknown, fallbackMessage: string): string {
     if (typeof error === 'object' && error !== null && 'data' in error) {
         const data = (error as { data?: unknown }).data;
 
@@ -41,7 +42,7 @@ function getErrorMessage(error: unknown): string {
         }
     }
 
-    return 'Unable to create account. Please check the form and try again.';
+    return fallbackMessage;
 }
 
 function createSlug(value: string) {
@@ -60,6 +61,7 @@ export function SignupAgencyOwnerPage() {
     const [serverError, setServerError] = useState<string | null>(null);
     const [signupAgencyOwner, { isLoading }] = useSignupAgencyOwnerMutation();
     const dispatch = useDispatch<AppDispatch>();
+    const { t } = useTranslation();
 
     const {
         register,
@@ -86,6 +88,10 @@ export function SignupAgencyOwnerPage() {
             phoneNumber: '',
         },
     });
+
+    const translateError = (message?: string) => {
+        return message ? t(message) : undefined;
+    };
 
     const agencyName = watch('agency.name');
 
@@ -123,21 +129,21 @@ export function SignupAgencyOwnerPage() {
 
             navigate('/packages');
         } catch (error) {
-            setServerError(getErrorMessage(error));
+            setServerError(getErrorMessage(error, t('auth.errors.signupFailed')));
         }
     };
 
     const visibleError =
         serverError ??
-        errors.agency?.name?.message ??
-        errors.agency?.slug?.message ??
-        errors.agency?.website?.message ??
-        errors.email?.message ??
-        errors.username?.message ??
-        errors.password?.message ??
-        errors.firstName?.message ??
-        errors.lastName?.message ??
-        errors.phoneNumber?.message;
+        translateError(errors.agency?.name?.message) ??
+        translateError(errors.agency?.slug?.message) ??
+        translateError(errors.agency?.website?.message) ??
+        translateError(errors.email?.message) ??
+        translateError(errors.username?.message) ??
+        translateError(errors.password?.message) ??
+        translateError(errors.firstName?.message) ??
+        translateError(errors.lastName?.message) ??
+        translateError(errors.phoneNumber?.message);
 
     return (
         <section className="w-full max-w-[560px]">
@@ -145,11 +151,11 @@ export function SignupAgencyOwnerPage() {
                 <AuthLogo />
 
                 <h1 className="mt-5 text-[22px] font-semibold leading-none tracking-[-0.01em] text-slate-900">
-                    Tour Package Analyzer
+                    {t('auth.appName')}
                 </h1>
 
                 <p className="mt-3 text-[15px] font-normal text-slate-400">
-                    Create your agency workspace
+                    {t('auth.signupSubtitle')}
                 </p>
             </div>
 
@@ -157,7 +163,7 @@ export function SignupAgencyOwnerPage() {
                 <form className="space-y-7" onSubmit={handleSubmit(onSubmit)} noValidate>
                     <div>
                         <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-400">
-                            Agency information
+                            {t('auth.agencyInformation')}
                         </h2>
 
                         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -166,12 +172,12 @@ export function SignupAgencyOwnerPage() {
                                     htmlFor="agencyName"
                                     className="mb-2 block text-[15px] font-medium text-slate-700"
                                 >
-                                    Agency name
+                                    {t('auth.agencyName')}
                                 </label>
                                 <input
                                     id="agencyName"
                                     type="text"
-                                    placeholder="Travel Pro"
+                                    placeholder={t('auth.placeholders.agencyName')}
                                     className="h-11 w-full rounded-lg border border-slate-300 bg-white px-4 text-[15px] text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-transparent focus:ring-2 focus:ring-blue-500"
                                     {...register('agency.name')}
                                 />
@@ -183,7 +189,7 @@ export function SignupAgencyOwnerPage() {
                                         htmlFor="agencySlug"
                                         className="block text-[15px] font-medium text-slate-700"
                                     >
-                                        Agency slug
+                                        {t('auth.agencySlug')}
                                     </label>
 
                                     <button
@@ -192,14 +198,14 @@ export function SignupAgencyOwnerPage() {
                                         disabled={!generatedSlug}
                                         className="text-[13px] font-medium text-blue-600 transition hover:text-blue-700 disabled:cursor-not-allowed disabled:text-slate-300"
                                     >
-                                        Generate from name
+                                        {t('auth.generateFromName')}
                                     </button>
                                 </div>
 
                                 <input
                                     id="agencySlug"
                                     type="text"
-                                    placeholder="travel-pro"
+                                    placeholder={t('auth.placeholders.agencySlug')}
                                     className="h-11 w-full rounded-lg border border-slate-300 bg-white px-4 text-[15px] text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-transparent focus:ring-2 focus:ring-blue-500"
                                     {...register('agency.slug')}
                                 />
@@ -210,12 +216,12 @@ export function SignupAgencyOwnerPage() {
                                     htmlFor="country"
                                     className="mb-2 block text-[15px] font-medium text-slate-700"
                                 >
-                                    Country
+                                    {t('auth.country')}
                                 </label>
                                 <input
                                     id="country"
                                     type="text"
-                                    placeholder="Ukraine"
+                                    placeholder={t('auth.placeholders.country')}
                                     className="h-11 w-full rounded-lg border border-slate-300 bg-white px-4 text-[15px] text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-transparent focus:ring-2 focus:ring-blue-500"
                                     {...register('agency.country')}
                                 />
@@ -226,12 +232,12 @@ export function SignupAgencyOwnerPage() {
                                     htmlFor="city"
                                     className="mb-2 block text-[15px] font-medium text-slate-700"
                                 >
-                                    City
+                                    {t('auth.city')}
                                 </label>
                                 <input
                                     id="city"
                                     type="text"
-                                    placeholder="Kharkiv"
+                                    placeholder={t('auth.placeholders.city')}
                                     className="h-11 w-full rounded-lg border border-slate-300 bg-white px-4 text-[15px] text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-transparent focus:ring-2 focus:ring-blue-500"
                                     {...register('agency.city')}
                                 />
@@ -242,12 +248,12 @@ export function SignupAgencyOwnerPage() {
                                     htmlFor="agencyPhone"
                                     className="mb-2 block text-[15px] font-medium text-slate-700"
                                 >
-                                    Agency phone
+                                    {t('auth.agencyPhone')}
                                 </label>
                                 <input
                                     id="agencyPhone"
                                     type="tel"
-                                    placeholder="+380501112233"
+                                    placeholder={t('auth.placeholders.phone')}
                                     className="h-11 w-full rounded-lg border border-slate-300 bg-white px-4 text-[15px] text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-transparent focus:ring-2 focus:ring-blue-500"
                                     {...register('agency.phoneNumber')}
                                 />
@@ -258,12 +264,12 @@ export function SignupAgencyOwnerPage() {
                                     htmlFor="website"
                                     className="mb-2 block text-[15px] font-medium text-slate-700"
                                 >
-                                    Website
+                                    {t('auth.website')}
                                 </label>
                                 <input
                                     id="website"
                                     type="url"
-                                    placeholder="https://travel-pro.com"
+                                    placeholder={t('auth.placeholders.website')}
                                     className="h-11 w-full rounded-lg border border-slate-300 bg-white px-4 text-[15px] text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-transparent focus:ring-2 focus:ring-blue-500"
                                     {...register('agency.website')}
                                 />
@@ -273,7 +279,7 @@ export function SignupAgencyOwnerPage() {
 
                     <div>
                         <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-400">
-                            Owner account
+                            {t('auth.ownerAccount')}
                         </h2>
 
                         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -282,12 +288,12 @@ export function SignupAgencyOwnerPage() {
                                     htmlFor="firstName"
                                     className="mb-2 block text-[15px] font-medium text-slate-700"
                                 >
-                                    First name
+                                    {t('auth.firstName')}
                                 </label>
                                 <input
                                     id="firstName"
                                     type="text"
-                                    placeholder="John"
+                                    placeholder={t('auth.placeholders.firstName')}
                                     className="h-11 w-full rounded-lg border border-slate-300 bg-white px-4 text-[15px] text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-transparent focus:ring-2 focus:ring-blue-500"
                                     {...register('firstName')}
                                 />
@@ -298,12 +304,12 @@ export function SignupAgencyOwnerPage() {
                                     htmlFor="lastName"
                                     className="mb-2 block text-[15px] font-medium text-slate-700"
                                 >
-                                    Last name
+                                    {t('auth.lastName')}
                                 </label>
                                 <input
                                     id="lastName"
                                     type="text"
-                                    placeholder="Smith"
+                                    placeholder={t('auth.placeholders.lastName')}
                                     className="h-11 w-full rounded-lg border border-slate-300 bg-white px-4 text-[15px] text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-transparent focus:ring-2 focus:ring-blue-500"
                                     {...register('lastName')}
                                 />
@@ -314,12 +320,12 @@ export function SignupAgencyOwnerPage() {
                                     htmlFor="email"
                                     className="mb-2 block text-[15px] font-medium text-slate-700"
                                 >
-                                    Email
+                                    {t('auth.email')}
                                 </label>
                                 <input
                                     id="email"
                                     type="email"
-                                    placeholder="owner@example.com"
+                                    placeholder={t('auth.placeholders.ownerEmail')}
                                     className="h-11 w-full rounded-lg border border-slate-300 bg-white px-4 text-[15px] text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-transparent focus:ring-2 focus:ring-blue-500"
                                     {...register('email')}
                                 />
@@ -330,12 +336,12 @@ export function SignupAgencyOwnerPage() {
                                     htmlFor="username"
                                     className="mb-2 block text-[15px] font-medium text-slate-700"
                                 >
-                                    Username
+                                    {t('auth.username')}
                                 </label>
                                 <input
                                     id="username"
                                     type="text"
-                                    placeholder="owner"
+                                    placeholder={t('auth.placeholders.username')}
                                     className="h-11 w-full rounded-lg border border-slate-300 bg-white px-4 text-[15px] text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-transparent focus:ring-2 focus:ring-blue-500"
                                     {...register('username')}
                                 />
@@ -346,12 +352,12 @@ export function SignupAgencyOwnerPage() {
                                     htmlFor="ownerPhone"
                                     className="mb-2 block text-[15px] font-medium text-slate-700"
                                 >
-                                    Owner phone
+                                    {t('auth.ownerPhone')}
                                 </label>
                                 <input
                                     id="ownerPhone"
                                     type="tel"
-                                    placeholder="+380501112233"
+                                    placeholder={t('auth.placeholders.phone')}
                                     className="h-11 w-full rounded-lg border border-slate-300 bg-white px-4 text-[15px] text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-transparent focus:ring-2 focus:ring-blue-500"
                                     {...register('phoneNumber')}
                                 />
@@ -362,14 +368,14 @@ export function SignupAgencyOwnerPage() {
                                     htmlFor="password"
                                     className="mb-2 block text-[15px] font-medium text-slate-700"
                                 >
-                                    Password
+                                    {t('auth.password')}
                                 </label>
 
                                 <div className="relative">
                                     <input
                                         id="password"
                                         type={showPassword ? 'text' : 'password'}
-                                        placeholder="••••••••"
+                                        placeholder={t('auth.placeholders.password')}
                                         className="h-11 w-full rounded-lg border border-slate-300 bg-white px-4 pr-11 text-[15px] text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-transparent focus:ring-2 focus:ring-blue-500"
                                         {...register('password')}
                                     />
@@ -382,8 +388,8 @@ export function SignupAgencyOwnerPage() {
                                         className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center justify-center text-slate-400 transition hover:text-slate-600"
                                         aria-label={
                                             showPassword
-                                                ? 'Hide password'
-                                                : 'Show password'
+                                                ? t('common.hidePassword')
+                                                : t('common.showPassword')
                                         }
                                     >
                                         {showPassword ? (
@@ -409,23 +415,23 @@ export function SignupAgencyOwnerPage() {
                         disabled={isLoading}
                         className="flex h-11 w-full items-center justify-center rounded-lg bg-blue-600 text-[15px] font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
                     >
-                        {isLoading ? 'Creating account…' : 'Create account'}
+                        {isLoading ? t('auth.creatingAccount') : t('auth.createAccount')}
                     </button>
                 </form>
             </div>
 
             <p className="mt-8 text-center text-[15px] text-slate-400">
-                Already have an account?
+                {t('auth.alreadyHaveAccount')}
                 <Link
                     to="/login"
                     className="ml-1 font-medium text-blue-600 transition hover:text-blue-700"
                 >
-                    Login
+                    {t('auth.login')}
                 </Link>
             </p>
 
             <p className="mt-10 text-center text-[13px] text-slate-300">
-                WanderCraft Agency · Internal Use Only
+                {t('auth.internalUseOnly')}
             </p>
         </section>
     );

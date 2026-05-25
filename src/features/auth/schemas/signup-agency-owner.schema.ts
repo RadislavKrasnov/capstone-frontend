@@ -7,17 +7,17 @@ export const signupAgencyOwnerSchema = z.object({
         name: z
             .string()
             .trim()
-            .min(1, 'Agency name is required')
-            .max(150, 'Agency name is too long'),
+            .min(1, 'auth.errors.agencyNameRequired')
+            .max(150, 'auth.errors.agencyNameTooLong'),
 
         slug: z
             .string()
             .trim()
-            .min(3, 'Slug must contain at least 3 characters')
-            .max(180, 'Slug is too long')
+            .min(3, 'auth.errors.agencySlugTooShort')
+            .max(180, 'auth.errors.agencySlugTooLong')
             .regex(
                 /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
-                'Use lowercase letters, numbers, and hyphens only',
+                'auth.errors.agencySlugInvalid',
             ),
 
         phoneNumber: optionalText,
@@ -28,7 +28,7 @@ export const signupAgencyOwnerSchema = z.object({
             .optional()
             .refine(
                 (value) => !value || /^https?:\/\/.+\..+/.test(value),
-                'Enter a valid website URL, for example https://travel-pro.com',
+                'auth.errors.websiteInvalid',
             ),
 
         country: optionalText,
@@ -38,36 +38,36 @@ export const signupAgencyOwnerSchema = z.object({
     email: z
         .string()
         .trim()
-        .min(1, 'Email is required')
-        .email('Enter a valid email address')
-        .max(255, 'Email is too long'),
+        .min(1, 'auth.errors.emailRequired')
+        .email('auth.errors.emailInvalid')
+        .max(255, 'auth.errors.emailTooLong'),
 
     username: z
         .string()
         .trim()
-        .min(3, 'Username must contain at least 3 characters')
-        .max(80, 'Username is too long')
+        .min(3, 'auth.errors.usernameTooShort')
+        .max(80, 'auth.errors.usernameTooLong')
         .regex(
             /^[a-zA-Z0-9._-]+$/,
-            'Use letters, numbers, dots, underscores, or hyphens only',
+            'auth.errors.usernameInvalid',
         ),
 
     password: z
         .string()
-        .min(6, 'Password must contain at least 6 characters')
-        .max(100, 'Password is too long'),
+        .min(6, 'auth.errors.passwordTooShort')
+        .max(100, 'auth.errors.passwordTooLong'),
 
     firstName: z
         .string()
         .trim()
-        .min(1, 'First name is required')
-        .max(100, 'First name is too long'),
+        .min(1, 'auth.errors.firstNameRequired')
+        .max(100, 'auth.errors.firstNameTooLong'),
 
     lastName: z
         .string()
         .trim()
-        .min(1, 'Last name is required')
-        .max(100, 'Last name is too long'),
+        .min(1, 'auth.errors.lastNameRequired')
+        .max(100, 'auth.errors.lastNameTooLong'),
 
     phoneNumber: optionalText,
 });

@@ -4,6 +4,7 @@ import { Eye, EyeOff, AlertTriangle } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 
 import type { AppDispatch } from '../../../app/store';
 import { setLoginCredentials } from '../authSlice';
@@ -11,7 +12,7 @@ import { AuthLogo } from '../components/AuthLogo';
 import { loginSchema, type LoginFormValues } from '../schemas/login.schema';
 import { useLoginMutation } from '../api/authApi';
 
-function getErrorMessage(error: unknown): string {
+function getErrorMessage(error: unknown, fallbackMessage: string): string {
     if (
         typeof error === 'object' &&
         error !== null &&
@@ -40,7 +41,7 @@ function getErrorMessage(error: unknown): string {
         }
     }
 
-    return 'Unable to sign in. Please check your email and password.';
+    return fallbackMessage;
 }
 
 export function LoginPage() {
@@ -49,6 +50,7 @@ export function LoginPage() {
     const [serverError, setServerError] = useState<string | null>(null);
     const [login, { isLoading }] = useLoginMutation();
     const dispatch = useDispatch<AppDispatch>();
+    const { t } = useTranslation();
 
     const {
         register,
@@ -62,6 +64,10 @@ export function LoginPage() {
         },
     });
 
+    const translateError = (message?: string) => {
+        return message ? t(message) : undefined;
+    };
+
     const onSubmit = async (values: LoginFormValues) => {
         setServerError(null);
 
@@ -72,12 +78,12 @@ export function LoginPage() {
 
             navigate('/packages');
         } catch (error) {
-            setServerError(getErrorMessage(error));
+            setServerError(getErrorMessage(error, t('auth.errors.loginFailed')));
         }
     };
 
-    const emailError = errors.email?.message;
-    const passwordError = errors.password?.message;
+    const emailError = translateError(errors.email?.message);
+    const passwordError = translateError(errors.password?.message);
     const visibleError = serverError ?? emailError ?? passwordError;
 
     return (
@@ -86,11 +92,11 @@ export function LoginPage() {
                 <AuthLogo />
 
                 <h1 className="mt-5 text-[22px] font-semibold leading-none tracking-[-0.01em] text-slate-900">
-                    Tour Package Analyzer
+                    {t('auth.appName')}
                 </h1>
 
                 <p className="mt-3 text-[15px] font-normal text-slate-400">
-                    Sign in to your account
+                    {t('auth.loginSubtitle')}
                 </p>
             </div>
 
@@ -101,14 +107,14 @@ export function LoginPage() {
                             htmlFor="email"
                             className="mb-2 block text-[15px] font-medium text-slate-700"
                         >
-                            Email
+                            {t('auth.email')}
                         </label>
 
                         <input
                             id="email"
                             type="email"
                             autoComplete="email"
-                            placeholder="you@company.com"
+                            placeholder={t('auth.placeholders.email')}
                             aria-invalid={Boolean(emailError)}
                             className="h-11 w-full rounded-lg border border-slate-300 bg-white px-4 text-[15px] text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-transparent focus:ring-2 focus:ring-blue-500"
                             {...register('email')}
@@ -121,14 +127,14 @@ export function LoginPage() {
                                 htmlFor="password"
                                 className="block text-[15px] font-medium text-slate-700"
                             >
-                                Password
+                                {t('auth.password')}
                             </label>
 
                             <button
                                 type="button"
                                 className="text-[13px] font-medium text-blue-600 transition hover:text-blue-700"
                             >
-                                Forgot password?
+                                {t('auth.forgotPassword')}
                             </button>
                         </div>
 
@@ -137,7 +143,7 @@ export function LoginPage() {
                                 id="password"
                                 type={showPassword ? 'text' : 'password'}
                                 autoComplete="current-password"
-                                placeholder="••••••••"
+                                placeholder={t('auth.placeholders.password')}
                                 aria-invalid={Boolean(passwordError)}
                                 className="h-11 w-full rounded-lg border border-slate-300 bg-white px-4 pr-11 text-[15px] text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-transparent focus:ring-2 focus:ring-blue-500"
                                 {...register('password')}
@@ -147,7 +153,11 @@ export function LoginPage() {
                                 type="button"
                                 onClick={() => setShowPassword((current) => !current)}
                                 className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center justify-center text-slate-400 transition hover:text-slate-600"
-                                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                aria-label={
+                                    showPassword
+                                        ? t('common.hidePassword')
+                                        : t('common.showPassword')
+                                }
                             >
                                 {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                             </button>
@@ -166,23 +176,23 @@ export function LoginPage() {
                         disabled={isLoading}
                         className="flex h-11 w-full items-center justify-center rounded-lg bg-blue-600 text-[15px] font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
                     >
-                        {isLoading ? 'Signing in…' : 'Login'}
+                        {isLoading ? t('auth.signingIn') : t('auth.login')}
                     </button>
                 </form>
             </div>
 
             <p className="mt-8 text-center text-[15px] text-slate-400">
-                Don&apos;t have an account?
+                {t('auth.noAccount')}
                 <Link
                     to="/signup"
                     className="ml-1 font-medium text-blue-600 transition hover:text-blue-700"
                 >
-                    Create account
+                    {t('auth.createAccount')}
                 </Link>
             </p>
 
             <p className="mt-10 text-center text-[13px] text-slate-300">
-                WanderCraft Agency · Internal Use Only
+                {t('auth.internalUseOnly')}
             </p>
         </section>
     );
