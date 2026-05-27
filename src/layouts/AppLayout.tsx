@@ -6,6 +6,7 @@ import type { AppDispatch, RootState } from '../app/store';
 import { CanAccess } from '../features/auth/components/CanAccess';
 import { clearCredentials } from '../features/auth/authSlice';
 import { useLogoutMutation } from '../features/auth/api/authApi';
+import { baseApi } from '../shared/api/baseApi';
 
 export function AppLayout() {
     const navigate = useNavigate();
@@ -19,6 +20,7 @@ export function AppLayout() {
             await logout().unwrap();
         } finally {
             dispatch(clearCredentials());
+            dispatch(baseApi.util.resetApiState());
             navigate('/login');
         }
     };
