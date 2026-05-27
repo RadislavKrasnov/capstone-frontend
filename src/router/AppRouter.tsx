@@ -8,6 +8,7 @@ import { SignupAgencyOwnerPage } from '../features/auth/pages/SignupAgencyOwnerP
 import { PublicOnlyRoute } from '../features/auth/components/PublicOnlyRoute';
 import { RequireAuth } from '../features/auth/components/RequireAuth';
 import { RequireRole } from '../features/auth/components/RequireRole';
+import { AgencyUsersPage } from '../features/users/pages/AgencyUsersPage';
 
 function PlaceholderPage({ title }: { title: string }) {
     const { t } = useTranslation();
@@ -58,16 +59,18 @@ export function AppRouter() {
                     </RequireAuth>
                 }
             >
+                <Route path="/packages" element={<PlaceholderPage title="Tour Packages" />} />
+                <Route path="/suppliers" element={<PlaceholderPage title="Suppliers" />} />
                 <Route
-                    path="/packages"
-                    element={<PlaceholderPage title={t('pages.packages')} />}
+                    path="/analysis-settings"
+                    element={<PlaceholderPage title="Analysis Settings" />}
                 />
 
                 <Route
                     path="/agency/users"
                     element={
                         <RequireRole allowedRoles={['OWNER']}>
-                            <PlaceholderPage title={t('pages.agencyUsers')} />
+                            <AgencyUsersPage />
                         </RequireRole>
                     }
                 />
