@@ -9,6 +9,8 @@ export const en = {
         forgotPassword: 'Forgot password?',
         login: 'Login',
         signingIn: 'Signing in…',
+        logout: 'Logout',
+        loggingOut: 'Logging out…',
 
         noAccount: "Don't have an account?",
         createAccount: 'Create account',
@@ -32,6 +34,13 @@ export const en = {
         ownerPhone: 'Owner phone',
 
         creatingAccount: 'Creating account…',
+
+        initializing: 'Loading application…',
+
+        roles: {
+            OWNER: 'Owner',
+            MANAGER: 'Manager',
+        },
 
         placeholders: {
             email: 'you@company.com',
@@ -81,6 +90,11 @@ export const en = {
         },
     },
 
+    navigation: {
+        packages: 'Packages',
+        agencyUsers: 'Agency users',
+    },
+
     common: {
         hidePassword: 'Hide password',
         showPassword: 'Show password',
@@ -90,5 +104,6 @@ export const en = {
 
     pages: {
         packages: 'Tour Packages',
+        agencyUsers: 'Agency Users',
     },
 } as const;

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { Link, useLocation, useNavigate } from 'react-router';
 import { Eye, EyeOff, AlertTriangle } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -51,6 +51,8 @@ export function LoginPage() {
     const [login, { isLoading }] = useLoginMutation();
     const dispatch = useDispatch<AppDispatch>();
     const { t } = useTranslation();
+    const location = useLocation();
+    const from = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ?? '/packages';
 
     const {
         register,
@@ -76,7 +78,7 @@ export function LoginPage() {
 
             dispatch(setLoginCredentials(response));
 
-            navigate('/packages');
+            navigate(from, { replace: true });
         } catch (error) {
             setServerError(getErrorMessage(error, t('auth.errors.loginFailed')));
         }

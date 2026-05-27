@@ -1,7 +1,12 @@
+import { AuthInitializer } from './features/auth/components/AuthInitializer';
 import { AppRouter } from './router/AppRouter';
 
 function App() {
-  return <AppRouter />;
+  return (
+      <AuthInitializer>
+        <AppRouter />
+      </AuthInitializer>
+  );
 }
 
 export default App;
