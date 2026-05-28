@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { AlertTriangle, Edit2, Plus, Search, Trash2 } from 'lucide-react';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 
 import type { RootState } from '../../../app/store';
 import { UiBadge } from '../../../shared/components/UiBadge';
@@ -35,6 +36,7 @@ export function AgencyUsersPage() {
     const [selectedUser, setSelectedUser] = useState<AgencyUser | null>(null);
     const [deleteError, setDeleteError] = useState<string | null>(null);
     const currentUser = useSelector((state: RootState) => state.auth.user);
+    const { t } = useTranslation();
 
     const { data, isLoading, isFetching, isError, refetch } = useGetUsersQuery(
         {
@@ -110,10 +112,15 @@ export function AgencyUsersPage() {
         <div className="space-y-5">
             <div className="flex items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-lg font-semibold text-slate-900">Users</h1>
+                    <h1 className="text-lg font-semibold text-slate-900">
+                        {t('users.title')}
+                    </h1>
                     <p className="mt-0.5 text-sm text-slate-400">
-                        {users.length} users · {activeCount} active ·{' '}
-                        <span className="text-amber-500">{inactiveCount} inactive</span>
+                        {t('users.summary', {
+                            total: users.length,
+                            active: activeCount,
+                            inactive: inactiveCount,
+                        })}
                     </p>
                 </div>
 
@@ -126,7 +133,7 @@ export function AgencyUsersPage() {
                         <input
                             value={search}
                             onChange={(event) => setSearch(event.target.value)}
-                            placeholder="Search users..."
+                            placeholder={t('users.searchPlaceholder')}
                             className="h-9 w-full rounded-lg border border-slate-300 bg-white pl-9 pr-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                         />
                     </div>
@@ -138,7 +145,7 @@ export function AgencyUsersPage() {
                             setModal('add');
                         }}
                     >
-                        New User
+                        {t('users.newUser')}
                     </UiButton>
                 </div>
             </div>
@@ -146,42 +153,47 @@ export function AgencyUsersPage() {
             <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
                 {isLoading ? (
                     <div className="px-5 py-16 text-center text-sm text-slate-400">
-                        Loading users...
+                        {t('users.loading')}
                     </div>
                 ) : isError ? (
                     <div className="flex flex-col items-center gap-3 px-5 py-16 text-center">
                         <AlertTriangle size={22} className="text-red-500" />
                         <div>
                             <p className="text-sm font-medium text-slate-800">
-                                Unable to load users
+                                {t('users.unableToLoadTitle')}
                             </p>
                             <p className="mt-1 text-xs text-slate-400">
-                                Please check backend availability and try again.
+                                {t('users.unableToLoadDescription')}
                             </p>
                         </div>
                         <UiButton size="sm" variant="secondary" onClick={() => refetch()}>
-                            Retry
+                            {t('users.retry')}
                         </UiButton>
                     </div>
                 ) : visibleUsers.length === 0 ? (
                     <div className="px-5 py-16 text-center text-sm text-slate-400">
-                        No users match your search.
+                        {t('users.noSearchResults')}
                     </div>
                 ) : (
                     <>
                         <table className="w-full">
                             <thead>
                             <tr className="border-b border-slate-100 bg-slate-50">
-                                {['Name', 'Email', 'Role', 'Agency', 'Active', ''].map(
-                                    (header) => (
-                                        <th
-                                            key={header}
-                                            className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-400"
-                                        >
-                                            {header}
-                                        </th>
-                                    ),
-                                )}
+                                {[
+                                    t('users.table.name'),
+                                    t('users.table.email'),
+                                    t('users.table.role'),
+                                    t('users.table.agency'),
+                                    t('users.table.active'),
+                                    t('users.table.actions'),
+                                ].map((header) => (
+                                    <th
+                                        key={header}
+                                        className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-400"
+                                    >
+                                        {header}
+                                    </th>
+                                ))}
                             </tr>
                             </thead>
 
@@ -230,19 +242,22 @@ export function AgencyUsersPage() {
                                     </td>
 
                                     <td className="px-5 py-4 text-sm text-slate-500">
-                                        {user.agency?.name ?? `Agency #${user.agencyId}`}
+                                        {user.agency?.name ??
+                                            t('common.agencyNumber', {
+                                                agencyId: user.agencyId,
+                                            })}
                                     </td>
 
                                     <td className="px-5 py-4">
                                         {user.isActive ? (
                                             <UiBadge variant="green" className="gap-1.5">
                                                 <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-                                                Yes
+                                                {t('users.status.yes')}
                                             </UiBadge>
                                         ) : (
                                             <UiBadge variant="gray" className="gap-1.5">
                                                 <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
-                                                No
+                                                {t('users.status.no')}
                                             </UiBadge>
                                         )}
                                     </td>
@@ -255,7 +270,7 @@ export function AgencyUsersPage() {
                                                 className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1.5 text-[11px] font-medium text-slate-600 transition hover:bg-slate-100"
                                             >
                                                 <Edit2 size={11} />
-                                                Edit
+                                                {t('users.actions.edit')}
                                             </button>
 
                                             <button
@@ -264,7 +279,7 @@ export function AgencyUsersPage() {
                                                 className="inline-flex items-center gap-1 rounded-lg border border-red-200 px-2.5 py-1.5 text-[11px] font-medium text-red-500 transition hover:bg-red-50"
                                             >
                                                 <Trash2 size={11} />
-                                                Delete
+                                                {t('users.actions.delete')}
                                             </button>
                                         </div>
                                     </td>
@@ -274,8 +289,11 @@ export function AgencyUsersPage() {
                         </table>
 
                         <div className="border-t border-slate-100 px-5 py-3 text-[11px] text-slate-400">
-                            {visibleUsers.length} of {users.length} users
-                            {isFetching ? ' · Refreshing...' : null}
+                            {t('users.tableFooter', {
+                                visible: visibleUsers.length,
+                                total: users.length,
+                            })}
+                            {isFetching ? ` · ${t('users.refreshing')}` : null}
                         </div>
                     </>
                 )}
@@ -285,8 +303,10 @@ export function AgencyUsersPage() {
                 <UiModal
                     title={
                         modal === 'add'
-                            ? 'New User'
-                            : `Edit User — ${selectedUser?.firstName} ${selectedUser?.lastName}`
+                            ? t('users.newUser')
+                            : t('users.editUserTitle', {
+                                name: `${selectedUser?.firstName} ${selectedUser?.lastName}`,
+                            })
                     }
                     onClose={closeModal}
                     widthClassName="max-w-lg"
@@ -302,14 +322,14 @@ export function AgencyUsersPage() {
 
             {modal === 'delete' && selectedUser && (
                 <UiModal
-                    title="Delete User"
+                    title={t('users.deleteUserTitle')}
                     onClose={closeModal}
                     widthClassName="max-w-sm"
                 >
                     <div className="space-y-4">
                         {deleteError && (
                             <div className="rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-700">
-                                {deleteError}
+                                {t(deleteError)}
                             </div>
                         )}
 
@@ -319,11 +339,11 @@ export function AgencyUsersPage() {
                                 className="mt-0.5 shrink-0 text-red-500"
                             />
                             <p className="text-sm leading-relaxed text-red-700">
-                                Are you sure you want to delete{' '}
+                                {t('users.deleteConfirmationPrefix')}{' '}
                                 <span className="font-semibold">
                                     {selectedUser.firstName} {selectedUser.lastName}
                                 </span>
-                                ? This action cannot be undone.
+                                {t('users.deleteConfirmationSuffix')}
                             </p>
                         </div>
 
@@ -333,7 +353,7 @@ export function AgencyUsersPage() {
                                 onClick={closeModal}
                                 disabled={isDeleting}
                             >
-                                Cancel
+                                {t('users.actions.cancel')}
                             </UiButton>
                             <UiButton
                                 variant="danger"
@@ -341,7 +361,9 @@ export function AgencyUsersPage() {
                                 disabled={isDeleting}
                                 icon={<Trash2 size={13} />}
                             >
-                                {isDeleting ? 'Deleting...' : 'Delete'}
+                                {isDeleting
+                                    ? t('users.actions.deleting')
+                                    : t('users.actions.delete')}
                             </UiButton>
                         </div>
                     </div>

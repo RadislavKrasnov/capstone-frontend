@@ -3,6 +3,7 @@ import { AlertTriangle, CheckCircle, Eye, EyeOff } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslation } from 'react-i18next';
 
 import type { RootState } from '../../../app/store';
 import { UiButton } from '../../../shared/components/UiButton';
@@ -36,7 +37,7 @@ export function getErrorMessage(error: unknown) {
         }
     }
 
-    return 'Something went wrong. Please try again.';
+    return 'users.errors.fallback';
 }
 
 type UserFormProps = {
@@ -50,6 +51,7 @@ export function UserForm({ mode, user, onCancel, onSuccess }: UserFormProps) {
     const currentUser = useSelector((state: RootState) => state.auth.user);
     const [showPassword, setShowPassword] = useState(false);
     const [serverError, setServerError] = useState<string | null>(null);
+    const { t } = useTranslation();
 
     const [createUser, { isLoading: isCreating }] = useCreateUserMutation();
     const [updateUser, { isLoading: isUpdating }] = useUpdateUserMutation();
@@ -82,7 +84,7 @@ export function UserForm({ mode, user, onCancel, onSuccess }: UserFormProps) {
         const password = values.password?.trim();
 
         if (mode === 'add' && !password) {
-            setServerError('Password is required for a new user.');
+            setServerError('users.errors.passwordRequiredForNewUser');
             return;
         }
 
@@ -117,46 +119,46 @@ export function UserForm({ mode, user, onCancel, onSuccess }: UserFormProps) {
             {serverError && (
                 <div className="flex items-start gap-2 rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-700">
                     <AlertTriangle size={15} className="mt-0.5 shrink-0" />
-                    <span>{serverError}</span>
+                    <span>{t(serverError)}</span>
                 </div>
             )}
 
             <div className="grid grid-cols-2 gap-4">
-                <FormField label="First Name" error={errors.firstName?.message}>
+                <FormField label={t('users.fields.firstName')} error={errors.firstName?.message ? t(errors.firstName.message) : undefined}>
                     <input
                         {...register('firstName')}
                         className="form-input"
-                        placeholder="John"
+                        placeholder={t('users.placeholders.firstName')}
                     />
                 </FormField>
 
-                <FormField label="Last Name" error={errors.lastName?.message}>
+                <FormField label={t('users.fields.lastName')} error={errors.lastName?.message ? t(errors.lastName.message) : undefined}>
                     <input
                         {...register('lastName')}
                         className="form-input"
-                        placeholder="Manager"
+                        placeholder={t('users.placeholders.lastName')}
                     />
                 </FormField>
             </div>
 
-            <FormField label="Email" error={errors.email?.message}>
+            <FormField label={t('users.fields.email')} error={errors.email?.message ? t(errors.email.message) : undefined}>
                 <input
                     {...register('email')}
                     className="form-input"
-                    placeholder="manager@example.com"
+                    placeholder={t('users.placeholders.email')}
                 />
             </FormField>
 
             <div className="grid grid-cols-2 gap-4">
-                <FormField label="Username" error={errors.username?.message}>
+                <FormField label={t('users.fields.username')} error={errors.username?.message ? t(errors.username.message) : undefined}>
                     <input
                         {...register('username')}
                         className="form-input"
-                        placeholder="manager1"
+                        placeholder={t('users.placeholders.username')}
                     />
                 </FormField>
 
-                <FormField label="Role" error={errors.role?.message}>
+                <FormField label={t('users.fields.role')} error={errors.role?.message ? t(errors.role.message) : undefined}>
                     <select {...register('role')} className="form-input">
                         <option value="MANAGER">MANAGER</option>
                         <option value="OWNER">OWNER</option>
@@ -165,21 +167,26 @@ export function UserForm({ mode, user, onCancel, onSuccess }: UserFormProps) {
             </div>
 
             <FormField
-                label="Password"
-                error={errors.password?.message}
-                hint={mode === 'edit' ? 'Leave empty to keep current password.' : undefined}
+                label={t('users.fields.password')}
+                error={errors.password?.message ? t(errors.password.message) : undefined}
+                hint={mode === 'edit' ? t('users.hints.keepCurrentPassword') : undefined}
             >
                 <div className="relative">
                     <input
                         {...register('password')}
                         type={showPassword ? 'text' : 'password'}
                         className="form-input pr-10"
-                        placeholder="Password123"
+                        placeholder={t('users.placeholders.password')}
                     />
                     <button
                         type="button"
                         onClick={() => setShowPassword((value) => !value)}
                         className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-slate-400 hover:bg-slate-100"
+                        aria-label={
+                            showPassword
+                                ? t('common.hidePassword')
+                                : t('common.showPassword')
+                        }
                     >
                         {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
                     </button>
@@ -197,19 +204,19 @@ export function UserForm({ mode, user, onCancel, onSuccess }: UserFormProps) {
                     {...register('isActive')}
                     className="h-4 w-4 rounded border-slate-300 text-blue-600"
                 />
-                Active user
+                {t('users.status.activeUser')}
             </label>
 
             <div className="flex justify-end gap-2 border-t border-slate-100 pt-5">
                 <UiButton variant="secondary" onClick={onCancel} disabled={isSaving}>
-                    Cancel
+                    {t('users.actions.cancel')}
                 </UiButton>
                 <UiButton
                     type="submit"
                     disabled={isSaving}
                     icon={<CheckCircle size={13} />}
                 >
-                    {isSaving ? 'Saving...' : 'Save User'}
+                    {isSaving ? t('users.actions.saving') : t('users.actions.saveUser')}
                 </UiButton>
             </div>
         </form>

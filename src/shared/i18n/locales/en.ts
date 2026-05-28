@@ -1,6 +1,7 @@
 export const en = {
     auth: {
         appName: 'Tour Package Analyzer',
+        shortAppName: 'Tour Analyzer',
         loginSubtitle: 'Sign in to your account',
         signupSubtitle: 'Create your agency workspace',
 
@@ -91,6 +92,7 @@ export const en = {
     },
 
     navigation: {
+        label: 'Navigation',
         packages: 'Packages',
         agencyUsers: 'Agency users',
     },
@@ -100,10 +102,90 @@ export const en = {
         showPassword: 'Show password',
         notFound: '404 Not Found',
         pageComingSoon: 'This page will be implemented in the next frontend step.',
+        notifications: 'Notifications',
+        agencyNumber: 'Agency #{{agencyId}}',
     },
 
     pages: {
         packages: 'Tour Packages',
+        suppliers: 'Suppliers',
+        analysisSettings: 'Analysis Settings',
         agencyUsers: 'Agency Users',
+        agencyUsersSubtitle: 'Manage team access and roles',
+    },
+
+    users: {
+        title: 'Users',
+        summary: '{{total}} users · {{active}} active · {{inactive}} inactive',
+        searchPlaceholder: 'Search users...',
+        newUser: 'New User',
+        editUserTitle: 'Edit User — {{name}}',
+        deleteUserTitle: 'Delete User',
+
+        loading: 'Loading users...',
+        unableToLoadTitle: 'Unable to load users',
+        unableToLoadDescription: 'Please check backend availability and try again.',
+        retry: 'Retry',
+        noSearchResults: 'No users match your search.',
+        tableFooter: '{{visible}} of {{total}} users',
+        refreshing: 'Refreshing...',
+
+        table: {
+            name: 'Name',
+            email: 'Email',
+            role: 'Role',
+            agency: 'Agency',
+            active: 'Active',
+            actions: '',
+        },
+
+        status: {
+            yes: 'Yes',
+            no: 'No',
+            activeUser: 'Active user',
+        },
+
+        actions: {
+            edit: 'Edit',
+            delete: 'Delete',
+            cancel: 'Cancel',
+            saveUser: 'Save User',
+            saving: 'Saving...',
+            deleting: 'Deleting...',
+        },
+
+        fields: {
+            firstName: 'First Name',
+            lastName: 'Last Name',
+            email: 'Email',
+            username: 'Username',
+            role: 'Role',
+            password: 'Password',
+        },
+
+        placeholders: {
+            firstName: 'John',
+            lastName: 'Manager',
+            email: 'manager@example.com',
+            username: 'manager1',
+            password: 'Password123',
+        },
+
+        hints: {
+            keepCurrentPassword: 'Leave empty to keep current password.',
+        },
+
+        deleteConfirmationPrefix: 'Are you sure you want to delete',
+        deleteConfirmationSuffix: '? This action cannot be undone.',
+
+        errors: {
+            fallback: 'Something went wrong. Please try again.',
+            passwordRequiredForNewUser: 'Password is required for a new user.',
+            firstNameRequired: 'First name is required',
+            lastNameRequired: 'Last name is required',
+            emailInvalid: 'Enter a valid email',
+            usernameTooShort: 'Username is too short',
+            passwordTooShort: 'Password must contain at least 6 characters',
+        },
     },
 } as const;

@@ -47,7 +47,7 @@ export function AppLayout() {
 
     const pageSubtitle =
         location.pathname === '/agency/users'
-            ? 'Manage team access and roles'
+            ? t('pages.agencyUsersSubtitle')
             : '';
 
     return (
@@ -61,11 +61,11 @@ export function AppLayout() {
 
                         <div className="min-w-0">
                             <h1 className="truncate text-[13px] font-semibold leading-tight text-white">
-                                Tour Analyzer
+                                {t('auth.shortAppName')}
                             </h1>
                             <p className="truncate text-[10px] leading-tight text-slate-500">
                                 {user?.agencyId
-                                    ? `Agency #${user.agencyId}`
+                                    ? t('common.agencyNumber', { agencyId: user.agencyId })
                                     : t('auth.appName')}
                             </p>
                         </div>
@@ -74,7 +74,7 @@ export function AppLayout() {
 
                 <nav className="flex-1 px-3 py-4">
                     <p className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
-                        Navigation
+                        {t('navigation.label')}
                     </p>
 
                     <div className="space-y-1">
@@ -151,7 +151,7 @@ export function AppLayout() {
                         <button
                             type="button"
                             className="relative rounded-md p-2 text-slate-500 transition-colors hover:bg-slate-100"
-                            aria-label="Notifications"
+                            aria-label={t('common.notifications')}
                         >
                             <Bell size={16} />
                             <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-red-500 ring-1 ring-white" />

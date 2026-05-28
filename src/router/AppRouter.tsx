@@ -59,11 +59,11 @@ export function AppRouter() {
                     </RequireAuth>
                 }
             >
-                <Route path="/packages" element={<PlaceholderPage title="Tour Packages" />} />
-                <Route path="/suppliers" element={<PlaceholderPage title="Suppliers" />} />
+                <Route path="/packages" element={<PlaceholderPage title={t('pages.packages')} />} />
+                <Route path="/suppliers" element={<PlaceholderPage title={t('pages.suppliers')} />} />
                 <Route
                     path="/analysis-settings"
-                    element={<PlaceholderPage title="Analysis Settings" />}
+                    element={<PlaceholderPage title={t('pages.analysisSettings')} />}
                 />
 
                 <Route
