@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
 import { AlertTriangle, Edit2, Plus, Search, Trash2 } from 'lucide-react';
+import { useSelector } from 'react-redux';
 
+import type { RootState } from '../../../app/store';
 import { UiBadge } from '../../../shared/components/UiBadge';
 import { UiButton } from '../../../shared/components/UiButton';
 import { UiModal } from '../../../shared/components/UiModal';
@@ -32,11 +34,18 @@ export function AgencyUsersPage() {
     const [modal, setModal] = useState<'add' | 'edit' | 'delete' | null>(null);
     const [selectedUser, setSelectedUser] = useState<AgencyUser | null>(null);
     const [deleteError, setDeleteError] = useState<string | null>(null);
+    const currentUser = useSelector((state: RootState) => state.auth.user);
 
-    const { data, isLoading, isFetching, isError, refetch } = useGetUsersQuery({
-        page: 1,
-        limit: 100,
-    });
+    const { data, isLoading, isFetching, isError, refetch } = useGetUsersQuery(
+        {
+            page: 1,
+            limit: 100,
+            agencyId: currentUser?.agencyId,
+        },
+        {
+            skip: !currentUser?.agencyId,
+        },
+    );
 
     const [deleteUser, { isLoading: isDeleting }] = useDeleteUserMutation();
 

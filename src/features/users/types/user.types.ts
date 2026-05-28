@@ -21,6 +21,7 @@ export type AgencyUser = {
 export type GetUsersRequest = {
     page?: number;
     limit?: number;
+    agencyId?: number;
 };
 
 export type GetUsersResponse = PaginatedResponse<AgencyUser>;

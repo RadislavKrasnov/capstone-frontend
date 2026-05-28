@@ -10,13 +10,14 @@ import type {
 
 export const usersApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
-        getUsers: builder.query<GetUsersResponse, GetUsersRequest | void>({
+        getUsers: builder.query<GetUsersResponse, GetUsersRequest>({
             query: (params) => ({
                 url: '/users',
                 method: 'GET',
                 params: {
-                    page: params?.page ?? 1,
-                    limit: params?.limit ?? 100,
+                    page: params.page ?? 1,
+                    limit: params.limit ?? 100,
+                    agencyId: params.agencyId,
                 },
             }),
             providesTags: (result) =>
