@@ -10,9 +10,13 @@ import {
     tourPackageSchema,
     type TourPackageFormValues,
 } from '../schemas/tourPackage.schema';
-import { useCreateTourPackageMutation } from '../api/tourPackagesApi';
+import {
+    useCreateTourPackageMutation,
+    useUpdateTourPackageMutation,
+} from '../api/tourPackagesApi';
+import type { TourPackage } from '../types/tourPackage.types';
 
-function getErrorMessage(error: unknown) {
+export function getErrorMessage(error: unknown) {
     if (
         typeof error === 'object' &&
         error !== null &&
@@ -46,17 +50,28 @@ function slugify(value: string) {
 }
 
 type TourPackageFormProps = {
+    mode: 'add' | 'edit';
+    tourPackage?: TourPackage | null;
     onCancel: () => void;
     onSuccess: () => void;
 };
 
 export function TourPackageForm({
+                                    mode,
+                                    tourPackage,
                                     onCancel,
                                     onSuccess,
                                 }: TourPackageFormProps) {
     const currentUser = useSelector((state: RootState) => state.auth.user);
     const [serverError, setServerError] = useState<string | null>(null);
-    const [createTourPackage, { isLoading }] = useCreateTourPackageMutation();
+
+    const [createTourPackage, { isLoading: isCreating }] =
+        useCreateTourPackageMutation();
+
+    const [updateTourPackage, { isLoading: isUpdating }] =
+        useUpdateTourPackageMutation();
+
+    const isSaving = isCreating || isUpdating;
 
     const {
         register,
@@ -67,17 +82,17 @@ export function TourPackageForm({
     } = useForm<TourPackageFormValues>({
         resolver: zodResolver(tourPackageSchema),
         defaultValues: {
-            title: '',
-            slug: '',
-            description: '',
-            destinationCountry: '',
-            destinationCity: '',
-            durationDays: 3,
-            expectedGroupSize: 12,
-            sellingPricePerPerson: 499.99,
-            currencyCode: 'EUR',
-            status: 'DRAFT',
-            internalNotes: '',
+            title: tourPackage?.title ?? '',
+            slug: tourPackage?.slug ?? '',
+            description: tourPackage?.description ?? '',
+            destinationCountry: tourPackage?.destinationCountry ?? '',
+            destinationCity: tourPackage?.destinationCity ?? '',
+            durationDays: tourPackage?.durationDays ?? 3,
+            expectedGroupSize: tourPackage?.expectedGroupSize ?? 12,
+            sellingPricePerPerson: tourPackage?.sellingPricePerPerson ?? 499.99,
+            currencyCode: tourPackage?.currencyCode ?? 'EUR',
+            status: tourPackage?.status ?? 'DRAFT',
+            internalNotes: tourPackage?.internalNotes ?? '',
         },
     });
 
@@ -93,28 +108,39 @@ export function TourPackageForm({
     };
 
     const onSubmit = async (values: TourPackageFormValues) => {
-        if (!currentUser?.agencyId) {
-            setServerError('Agency is missing for the current user.');
-            return;
-        }
-
         setServerError(null);
 
+        const payload = {
+            title: values.title.trim(),
+            slug: values.slug.trim(),
+            description: values.description?.trim() || undefined,
+            destinationCountry: values.destinationCountry?.trim() || undefined,
+            destinationCity: values.destinationCity?.trim() || undefined,
+            durationDays: values.durationDays,
+            expectedGroupSize: values.expectedGroupSize,
+            sellingPricePerPerson: values.sellingPricePerPerson,
+            currencyCode: values.currencyCode,
+            status: values.status,
+            internalNotes: values.internalNotes?.trim() || undefined,
+        };
+
         try {
-            await createTourPackage({
-                agencyId: currentUser.agencyId,
-                title: values.title.trim(),
-                slug: values.slug.trim(),
-                description: values.description?.trim() || undefined,
-                destinationCountry: values.destinationCountry?.trim() || undefined,
-                destinationCity: values.destinationCity?.trim() || undefined,
-                durationDays: values.durationDays,
-                expectedGroupSize: values.expectedGroupSize,
-                sellingPricePerPerson: values.sellingPricePerPerson,
-                currencyCode: values.currencyCode,
-                status: values.status,
-                internalNotes: values.internalNotes?.trim() || undefined,
-            }).unwrap();
+            if (mode === 'add') {
+                if (!currentUser?.agencyId) {
+                    setServerError('Agency is missing for the current user.');
+                    return;
+                }
+
+                await createTourPackage({
+                    agencyId: currentUser.agencyId,
+                    ...payload,
+                }).unwrap();
+            } else if (tourPackage) {
+                await updateTourPackage({
+                    uuid: tourPackage.uuid,
+                    body: payload,
+                }).unwrap();
+            }
 
             onSuccess();
         } catch (error) {
@@ -193,7 +219,10 @@ export function TourPackageForm({
                     />
                 </FormField>
 
-                <FormField label="Group Size" error={errors.expectedGroupSize?.message}>
+                <FormField
+                    label="Group Size"
+                    error={errors.expectedGroupSize?.message}
+                >
                     <input
                         type="number"
                         {...register('expectedGroupSize', { valueAsNumber: true })}
@@ -209,7 +238,9 @@ export function TourPackageForm({
                     <input
                         type="number"
                         step="0.01"
-                        {...register('sellingPricePerPerson', { valueAsNumber: true })}
+                        {...register('sellingPricePerPerson', {
+                            valueAsNumber: true,
+                        })}
                         className="form-input"
                         min={0}
                     />
@@ -227,6 +258,15 @@ export function TourPackageForm({
                     </select>
                 </FormField>
             </div>
+
+            <FormField label="Status" error={errors.status?.message}>
+                <select {...register('status')} className="form-input">
+                    <option value="DRAFT">DRAFT</option>
+                    <option value="ANALYZED">ANALYZED</option>
+                    <option value="PUBLISHED">PUBLISHED</option>
+                    <option value="ARCHIVED">ARCHIVED</option>
+                </select>
+            </FormField>
 
             <FormField label="Description" error={errors.description?.message}>
                 <textarea
@@ -247,15 +287,19 @@ export function TourPackageForm({
             </FormField>
 
             <div className="flex justify-end gap-2 border-t border-slate-100 pt-5">
-                <UiButton variant="secondary" onClick={onCancel} disabled={isLoading}>
+                <UiButton variant="secondary" onClick={onCancel} disabled={isSaving}>
                     Cancel
                 </UiButton>
                 <UiButton
                     type="submit"
-                    disabled={isLoading}
+                    disabled={isSaving}
                     icon={<CheckCircle size={13} />}
                 >
-                    {isLoading ? 'Creating...' : 'Create Package'}
+                    {isSaving
+                        ? 'Saving...'
+                        : mode === 'add'
+                            ? 'Create Package'
+                            : 'Save Package'}
                 </UiButton>
             </div>
         </form>

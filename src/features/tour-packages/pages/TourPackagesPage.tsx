@@ -1,14 +1,27 @@
 import { useMemo, useState } from 'react';
-import { AlertTriangle, MapPin, Plus, Search } from 'lucide-react';
+import {
+    AlertTriangle,
+    Edit2,
+    MapPin,
+    Plus,
+    Search,
+    Trash2,
+} from 'lucide-react';
 import { useNavigate } from 'react-router';
 
 import { UiButton } from '../../../shared/components/UiButton';
 import { UiModal } from '../../../shared/components/UiModal';
-import { useGetTourPackagesQuery } from '../api/tourPackagesApi';
+import {
+    useDeleteTourPackageMutation,
+    useGetTourPackagesQuery,
+} from '../api/tourPackagesApi';
 import { PackageMarginText } from '../components/PackageMarginText';
 import { PackageRiskBadge } from '../components/PackageRiskBadge';
 import { PackageStatusBadge } from '../components/PackageStatusBadge';
-import { TourPackageForm } from '../components/TourPackageForm';
+import {
+    TourPackageForm,
+    getErrorMessage,
+} from '../components/TourPackageForm';
 import type { PackageStatus, TourPackage } from '../types/tourPackage.types';
 
 const statusFilters: Array<'ALL' | PackageStatus> = [
@@ -52,9 +65,15 @@ function getPackageCode(tourPackage: TourPackage, index: number) {
 
 export function TourPackagesPage() {
     const navigate = useNavigate();
+
     const [search, setSearch] = useState('');
-    const [statusFilter, setStatusFilter] = useState<'ALL' | PackageStatus>('ALL');
-    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [statusFilter, setStatusFilter] =
+        useState<'ALL' | PackageStatus>('ALL');
+
+    const [modal, setModal] = useState<'add' | 'edit' | 'delete' | null>(null);
+    const [selectedPackage, setSelectedPackage] =
+        useState<TourPackage | null>(null);
+    const [deleteError, setDeleteError] = useState<string | null>(null);
 
     const {
         data,
@@ -66,6 +85,9 @@ export function TourPackagesPage() {
         page: 1,
         limit: 100,
     });
+
+    const [deleteTourPackage, { isLoading: isDeleting }] =
+        useDeleteTourPackageMutation();
 
     const packages = data?.data ?? [];
 
@@ -88,6 +110,43 @@ export function TourPackagesPage() {
         });
     }, [packages, search, statusFilter]);
 
+    const openAdd = () => {
+        setSelectedPackage(null);
+        setModal('add');
+    };
+
+    const openEdit = (tourPackage: TourPackage) => {
+        setSelectedPackage(tourPackage);
+        setModal('edit');
+    };
+
+    const openDelete = (tourPackage: TourPackage) => {
+        setSelectedPackage(tourPackage);
+        setDeleteError(null);
+        setModal('delete');
+    };
+
+    const closeModal = () => {
+        setModal(null);
+        setSelectedPackage(null);
+        setDeleteError(null);
+    };
+
+    const confirmDelete = async () => {
+        if (!selectedPackage) {
+            return;
+        }
+
+        setDeleteError(null);
+
+        try {
+            await deleteTourPackage({ uuid: selectedPackage.uuid }).unwrap();
+            closeModal();
+        } catch (error) {
+            setDeleteError(getErrorMessage(error));
+        }
+    };
+
     return (
         <div className="space-y-5">
             <div className="flex items-start justify-between gap-4">
@@ -104,7 +163,7 @@ export function TourPackagesPage() {
                 <UiButton
                     icon={<Plus size={15} />}
                     className="h-10 rounded-md px-4"
-                    onClick={() => setIsCreateModalOpen(true)}
+                    onClick={openAdd}
                 >
                     New Package
                 </UiButton>
@@ -184,6 +243,7 @@ export function TourPackagesPage() {
                                 'Margin',
                                 'Status',
                                 'Risk',
+                                '',
                             ].map((header) => (
                                 <th
                                     key={header}
@@ -254,6 +314,28 @@ export function TourPackagesPage() {
                                 <td className="px-5 py-4">
                                     <PackageRiskBadge risk={null} />
                                 </td>
+
+                                <td className="px-5 py-4">
+                                    <div className="flex justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                                        <button
+                                            type="button"
+                                            onClick={() => openEdit(tourPackage)}
+                                            className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1.5 text-[11px] font-medium text-slate-600 transition hover:bg-slate-100"
+                                        >
+                                            <Edit2 size={11} />
+                                            Edit
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            onClick={() => openDelete(tourPackage)}
+                                            className="inline-flex items-center gap-1 rounded-lg border border-red-200 px-2.5 py-1.5 text-[11px] font-medium text-red-500 transition hover:bg-red-50"
+                                        >
+                                            <Trash2 size={11} />
+                                            Delete
+                                        </button>
+                                    </div>
+                                </td>
                             </tr>
                         ))}
                         </tbody>
@@ -261,16 +343,70 @@ export function TourPackagesPage() {
                 )}
             </div>
 
-            {isCreateModalOpen && (
+            {(modal === 'add' || modal === 'edit') && (
                 <UiModal
-                    title="Create New Package"
-                    onClose={() => setIsCreateModalOpen(false)}
+                    title={
+                        modal === 'add'
+                            ? 'Create New Package'
+                            : `Edit Package — ${selectedPackage?.title ?? ''}`
+                    }
+                    onClose={closeModal}
                     widthClassName="max-w-2xl"
                 >
                     <TourPackageForm
-                        onCancel={() => setIsCreateModalOpen(false)}
-                        onSuccess={() => setIsCreateModalOpen(false)}
+                        mode={modal}
+                        tourPackage={selectedPackage}
+                        onCancel={closeModal}
+                        onSuccess={closeModal}
                     />
+                </UiModal>
+            )}
+
+            {modal === 'delete' && selectedPackage && (
+                <UiModal
+                    title="Delete Package"
+                    onClose={closeModal}
+                    widthClassName="max-w-sm"
+                >
+                    <div className="space-y-4">
+                        {deleteError && (
+                            <div className="rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-700">
+                                {deleteError}
+                            </div>
+                        )}
+
+                        <div className="flex items-start gap-3 rounded-lg border border-red-100 bg-red-50 p-3">
+                            <AlertTriangle
+                                size={16}
+                                className="mt-0.5 shrink-0 text-red-500"
+                            />
+                            <p className="text-sm leading-relaxed text-red-700">
+                                Are you sure you want to delete{' '}
+                                <span className="font-semibold">
+                                    {selectedPackage.title}
+                                </span>
+                                ? This action cannot be undone.
+                            </p>
+                        </div>
+
+                        <div className="flex justify-end gap-2">
+                            <UiButton
+                                variant="secondary"
+                                onClick={closeModal}
+                                disabled={isDeleting}
+                            >
+                                Cancel
+                            </UiButton>
+                            <UiButton
+                                variant="danger"
+                                onClick={confirmDelete}
+                                disabled={isDeleting}
+                                icon={<Trash2 size={13} />}
+                            >
+                                {isDeleting ? 'Deleting...' : 'Delete'}
+                            </UiButton>
+                        </div>
+                    </div>
                 </UiModal>
             )}
         </div>
