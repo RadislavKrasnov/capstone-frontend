@@ -9,6 +9,7 @@ import { PublicOnlyRoute } from '../features/auth/components/PublicOnlyRoute';
 import { RequireAuth } from '../features/auth/components/RequireAuth';
 import { RequireRole } from '../features/auth/components/RequireRole';
 import { AgencyUsersPage } from '../features/users/pages/AgencyUsersPage';
+import { TourPackagesPage } from '../features/tour-packages/pages/TourPackagesPage';
 
 function PlaceholderPage({ title }: { title: string }) {
     const { t } = useTranslation();
@@ -59,7 +60,11 @@ export function AppRouter() {
                     </RequireAuth>
                 }
             >
-                <Route path="/packages" element={<PlaceholderPage title={t('pages.packages')} />} />
+                <Route path="/packages" element={<TourPackagesPage />} />
+                <Route
+                    path="/packages/:uuid"
+                    element={<PlaceholderPage title="Package Detail" />}
+                />
                 <Route path="/suppliers" element={<PlaceholderPage title={t('pages.suppliers')} />} />
                 <Route
                     path="/analysis-settings"

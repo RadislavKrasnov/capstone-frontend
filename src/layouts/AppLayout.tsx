@@ -6,6 +6,8 @@ import {
     ChevronDown,
     LogOut,
     Package,
+    Settings,
+    Truck,
     Users,
     Zap,
 } from 'lucide-react';
@@ -41,14 +43,24 @@ export function AppLayout() {
     const pageTitle =
         location.pathname === '/agency/users'
             ? t('pages.agencyUsers')
-            : location.pathname === '/packages'
-                ? t('pages.packages')
-                : t('auth.appName');
+            : location.pathname === '/suppliers'
+                ? t('pages.suppliers')
+                : location.pathname === '/analysis-settings'
+                    ? t('pages.analysisSettings')
+                    : location.pathname.startsWith('/packages')
+                        ? t('pages.packages')
+                        : t('auth.appName');
 
     const pageSubtitle =
         location.pathname === '/agency/users'
             ? t('pages.agencyUsersSubtitle')
-            : '';
+            : location.pathname === '/suppliers'
+                ? 'Manage supplier relationships'
+                : location.pathname === '/analysis-settings'
+                    ? 'Configure thresholds and rules'
+                    : location.pathname.startsWith('/packages')
+                        ? 'Manage and analyze all packages'
+                        : '';
 
     return (
         <div className="flex min-h-screen bg-[#f1f4f8] text-slate-900">
@@ -91,6 +103,36 @@ export function AppLayout() {
                         >
                             <Package size={15} />
                             {t('navigation.packages')}
+                        </NavLink>
+
+                        <NavLink
+                            to="/suppliers"
+                            className={({ isActive }) =>
+                                [
+                                    'flex items-center gap-3 rounded-md px-3 py-2.5 text-[13px] font-medium transition-colors',
+                                    isActive
+                                        ? 'bg-blue-600 text-white shadow-sm'
+                                        : 'text-slate-400 hover:bg-slate-700/80 hover:text-slate-200',
+                                ].join(' ')
+                            }
+                        >
+                            <Truck size={15} />
+                            Suppliers
+                        </NavLink>
+
+                        <NavLink
+                            to="/analysis-settings"
+                            className={({ isActive }) =>
+                                [
+                                    'flex items-center gap-3 rounded-md px-3 py-2.5 text-[13px] font-medium transition-colors',
+                                    isActive
+                                        ? 'bg-blue-600 text-white shadow-sm'
+                                        : 'text-slate-400 hover:bg-slate-700/80 hover:text-slate-200',
+                                ].join(' ')
+                            }
+                        >
+                            <Settings size={15} />
+                            Analysis Settings
                         </NavLink>
 
                         <CanAccess allowedRoles={['OWNER']}>

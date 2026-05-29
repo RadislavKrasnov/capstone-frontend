@@ -1,0 +1,278 @@
+import { useMemo, useState } from 'react';
+import { AlertTriangle, MapPin, Plus, Search } from 'lucide-react';
+import { useNavigate } from 'react-router';
+
+import { UiButton } from '../../../shared/components/UiButton';
+import { UiModal } from '../../../shared/components/UiModal';
+import { useGetTourPackagesQuery } from '../api/tourPackagesApi';
+import { PackageMarginText } from '../components/PackageMarginText';
+import { PackageRiskBadge } from '../components/PackageRiskBadge';
+import { PackageStatusBadge } from '../components/PackageStatusBadge';
+import { TourPackageForm } from '../components/TourPackageForm';
+import type { PackageStatus, TourPackage } from '../types/tourPackage.types';
+
+const statusFilters: Array<'ALL' | PackageStatus> = [
+    'ALL',
+    'PUBLISHED',
+    'ANALYZED',
+    'DRAFT',
+    'ARCHIVED',
+];
+
+const statusFilterLabels: Record<'ALL' | PackageStatus, string> = {
+    ALL: 'All',
+    PUBLISHED: 'Published',
+    ANALYZED: 'Analyzed',
+    DRAFT: 'Draft',
+    ARCHIVED: 'Archived',
+};
+
+function formatCurrency(value: number, currencyCode: string) {
+    return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: currencyCode || 'USD',
+        maximumFractionDigits: 0,
+    }).format(value);
+}
+
+function getDestination(tourPackage: TourPackage) {
+    const parts = [
+        tourPackage.destinationCity,
+        tourPackage.destinationCountry,
+    ].filter(Boolean);
+
+    return parts.length > 0 ? parts.join(', ') : '—';
+}
+
+function getPackageCode(tourPackage: TourPackage, index: number) {
+    const id = String(tourPackage.id || index + 1).padStart(3, '0');
+
+    return `PKG-${id}`;
+}
+
+export function TourPackagesPage() {
+    const navigate = useNavigate();
+    const [search, setSearch] = useState('');
+    const [statusFilter, setStatusFilter] = useState<'ALL' | PackageStatus>('ALL');
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+    const {
+        data,
+        isLoading,
+        isFetching,
+        isError,
+        refetch,
+    } = useGetTourPackagesQuery({
+        page: 1,
+        limit: 100,
+    });
+
+    const packages = data?.data ?? [];
+
+    const visiblePackages = useMemo(() => {
+        const query = search.trim().toLowerCase();
+
+        return packages.filter((tourPackage) => {
+            const destination = getDestination(tourPackage).toLowerCase();
+
+            const matchesSearch =
+                !query ||
+                tourPackage.title.toLowerCase().includes(query) ||
+                destination.includes(query) ||
+                tourPackage.slug.toLowerCase().includes(query);
+
+            const matchesStatus =
+                statusFilter === 'ALL' || tourPackage.status === statusFilter;
+
+            return matchesSearch && matchesStatus;
+        });
+    }, [packages, search, statusFilter]);
+
+    return (
+        <div className="space-y-5">
+            <div className="flex items-start justify-between gap-4">
+                <div>
+                    <h1 className="text-[18px] font-semibold leading-tight text-slate-900">
+                        Tour Packages
+                    </h1>
+                    <p className="mt-1 text-[13px] text-slate-400">
+                        {packages.length} packages total
+                        {isFetching ? ' · Refreshing...' : ''}
+                    </p>
+                </div>
+
+                <UiButton
+                    icon={<Plus size={15} />}
+                    className="h-10 rounded-md px-4"
+                    onClick={() => setIsCreateModalOpen(true)}
+                >
+                    New Package
+                </UiButton>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+                <div className="relative w-full max-w-[420px]">
+                    <Search
+                        size={16}
+                        className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+                    />
+                    <input
+                        value={search}
+                        onChange={(event) => setSearch(event.target.value)}
+                        placeholder="Search packages or destinations..."
+                        className="h-10 w-full rounded-md border border-slate-300 bg-white pl-10 pr-3 text-[14px] text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                    />
+                </div>
+
+                <div className="flex flex-wrap items-center gap-1.5">
+                    {statusFilters.map((status) => {
+                        const isActive = statusFilter === status;
+
+                        return (
+                            <button
+                                key={status}
+                                type="button"
+                                onClick={() => setStatusFilter(status)}
+                                className={[
+                                    'h-9 rounded-md border px-4 text-[13px] font-medium transition-colors',
+                                    isActive
+                                        ? 'border-blue-600 bg-blue-600 text-white shadow-sm'
+                                        : 'border-slate-300 bg-white text-slate-600 hover:bg-slate-50',
+                                ].join(' ')}
+                            >
+                                {statusFilterLabels[status]}
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
+
+            <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+                {isLoading ? (
+                    <div className="px-5 py-16 text-center text-sm text-slate-400">
+                        Loading packages...
+                    </div>
+                ) : isError ? (
+                    <div className="flex flex-col items-center gap-3 px-5 py-16 text-center">
+                        <AlertTriangle size={22} className="text-red-500" />
+                        <div>
+                            <p className="text-sm font-medium text-slate-800">
+                                Unable to load tour packages
+                            </p>
+                            <p className="mt-1 text-xs text-slate-400">
+                                Please check backend availability and try again.
+                            </p>
+                        </div>
+                        <UiButton size="sm" variant="secondary" onClick={() => refetch()}>
+                            Retry
+                        </UiButton>
+                    </div>
+                ) : visiblePackages.length === 0 ? (
+                    <div className="px-5 py-16 text-center text-sm text-slate-400">
+                        No packages match your search.
+                    </div>
+                ) : (
+                    <table className="w-full">
+                        <thead>
+                        <tr className="border-b border-slate-100 bg-white">
+                            {[
+                                'Package Name',
+                                'Destination',
+                                'Duration',
+                                'Group',
+                                'Base Price',
+                                'Margin',
+                                'Status',
+                                'Risk',
+                            ].map((header) => (
+                                <th
+                                    key={header}
+                                    className="px-5 py-4 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-400"
+                                >
+                                    {header}
+                                </th>
+                            ))}
+                        </tr>
+                        </thead>
+
+                        <tbody className="divide-y divide-slate-50">
+                        {visiblePackages.map((tourPackage, index) => (
+                            <tr
+                                key={tourPackage.uuid}
+                                className="group transition hover:bg-slate-50/70"
+                            >
+                                <td className="px-5 py-4">
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            navigate(`/packages/${tourPackage.uuid}`)
+                                        }
+                                        className="text-left"
+                                    >
+                                        <p className="text-[14px] font-semibold leading-tight text-blue-600 transition hover:text-blue-700">
+                                            {tourPackage.title}
+                                        </p>
+                                        <p className="mt-0.5 text-[12px] font-medium text-slate-400">
+                                            {getPackageCode(tourPackage, index)}
+                                        </p>
+                                    </button>
+                                </td>
+
+                                <td className="px-5 py-4">
+                                    <div className="flex items-center gap-1.5 text-[14px] text-slate-600">
+                                        <MapPin
+                                            size={13}
+                                            className="shrink-0 text-slate-400"
+                                        />
+                                        {getDestination(tourPackage)}
+                                    </div>
+                                </td>
+
+                                <td className="px-5 py-4 text-[14px] text-slate-600">
+                                    {tourPackage.durationDays}d
+                                </td>
+
+                                <td className="px-5 py-4 text-[14px] text-slate-600">
+                                    {tourPackage.expectedGroupSize} pax
+                                </td>
+
+                                <td className="px-5 py-4 text-[14px] font-semibold text-slate-800">
+                                    {formatCurrency(
+                                        tourPackage.sellingPricePerPerson,
+                                        tourPackage.currencyCode,
+                                    )}
+                                </td>
+
+                                <td className="px-5 py-4">
+                                    <PackageMarginText marginPercent={null} />
+                                </td>
+
+                                <td className="px-5 py-4">
+                                    <PackageStatusBadge status={tourPackage.status} />
+                                </td>
+
+                                <td className="px-5 py-4">
+                                    <PackageRiskBadge risk={null} />
+                                </td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
+                )}
+            </div>
+
+            {isCreateModalOpen && (
+                <UiModal
+                    title="Create New Package"
+                    onClose={() => setIsCreateModalOpen(false)}
+                    widthClassName="max-w-2xl"
+                >
+                    <TourPackageForm
+                        onCancel={() => setIsCreateModalOpen(false)}
+                        onSuccess={() => setIsCreateModalOpen(false)}
+                    />
+                </UiModal>
+            )}
+        </div>
+    );
+}
