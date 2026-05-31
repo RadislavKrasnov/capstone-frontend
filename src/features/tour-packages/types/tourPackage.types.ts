@@ -56,3 +56,59 @@ export type UpdateTourPackageArgs = {
 export type DeleteTourPackageArgs = {
     uuid: string;
 };
+
+export type FinancialRiskLevel = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+
+export type AnalysisDashboardResponse = {
+    analysisRun: {
+        uuid: string;
+        status: 'COMPLETED' | 'FAILED';
+        algorithmVersion: string;
+        createdAt: string;
+    };
+    financial: {
+        totalRevenue: number;
+        totalCost: number;
+        grossProfit: number;
+        grossMarginPercent: number;
+        fixedCostTotal: number;
+        variableCostTotal: number;
+        variableCostPerPerson: number;
+        costPerPerson: number;
+        profitPerPerson: number;
+        contributionPerPerson: number;
+        breakEvenGroupSize: number;
+        breakEvenGroupSizeRounded: number;
+        breakEvenSafetyTravelers: number;
+        breakEvenUtilizationPercent: number;
+        requiredPriceForTargetMargin: number;
+        priceGapPerPerson: number;
+        requiredCostReductionForTargetMargin: number;
+        markupPercent: number;
+        financialRiskLevel: FinancialRiskLevel;
+        categoryCostBreakdown: Array<{
+            category: string;
+            totalCost: number;
+            sharePercent: number;
+        }>;
+        supplierCostBreakdown: Array<{
+            supplierId: number | null;
+            supplierName: string;
+            totalCost: number;
+            sharePercent: number;
+        }>;
+    };
+    quality: {
+        overallScore: number;
+        qualityLevel: 'EXCELLENT' | 'GOOD' | 'RISKY' | 'POOR' | 'CRITICAL';
+        profitabilityScore: number;
+        itineraryBalanceScore: number;
+        operationalFeasibilityScore: number;
+        costStructureScore: number;
+        appliedCaps: Array<{
+            code: string;
+            description: string;
+            cappedAt: number;
+        }>;
+    };
+};

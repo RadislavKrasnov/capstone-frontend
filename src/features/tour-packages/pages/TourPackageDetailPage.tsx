@@ -4,7 +4,12 @@ import { useNavigate, useParams } from 'react-router';
 
 import { UiBadge } from '../../../shared/components/UiBadge';
 import { UiButton } from '../../../shared/components/UiButton';
-import { useGetTourPackageQuery } from '../api/tourPackagesApi';
+import {
+    useGetLatestPackageAnalysisQuery,
+    useGetTourPackageQuery,
+} from '../api/tourPackagesApi';
+import { PackageMarginText } from '../components/PackageMarginText';
+import { PackageRiskBadge } from '../components/PackageRiskBadge';
 import { TourPackageOverviewForm } from '../components/TourPackageOverviewForm';
 import {
     PackageWorkspaceTabs,
@@ -36,6 +41,13 @@ export function TourPackageDetailPage() {
         isError,
         refetch,
     } = useGetTourPackageQuery(uuid ?? '', {
+        skip: !uuid,
+    });
+
+    const {
+        data: latestAnalysis,
+        isFetching: isAnalysisFetching,
+    } = useGetLatestPackageAnalysisQuery(uuid ?? '', {
         skip: !uuid,
     });
 
@@ -83,6 +95,9 @@ export function TourPackageDetailPage() {
         );
     }
 
+    const grossMarginPercent = latestAnalysis?.financial.grossMarginPercent ?? null;
+    const financialRiskLevel = latestAnalysis?.financial.financialRiskLevel ?? null;
+
     return (
         <div className="space-y-6">
             <PackageWorkspaceTabs
@@ -107,15 +122,37 @@ export function TourPackageDetailPage() {
 
                     <div className="grid max-w-[980px] grid-cols-4 gap-3">
                         <SummaryCard label="Package ID" value={getPackageCode(tourPackage)} />
+
                         <SummaryCard label="Destination" value={getDestination(tourPackage)} />
+
                         <SummaryCard
                             label="Gross Margin"
-                            value="—"
-                            mutedValue="Run analysis"
+                            value={
+                                isAnalysisFetching ? (
+                                    <span className="text-xs font-medium text-slate-300">
+                                        Loading...
+                                    </span>
+                                ) : grossMarginPercent !== null ? (
+                                    <PackageMarginText marginPercent={grossMarginPercent} />
+                                ) : (
+                                    <span className="text-xs font-medium text-slate-300">
+                                        Not analyzed
+                                    </span>
+                                )
+                            }
                         />
+
                         <SummaryCard
                             label="Risk Level"
-                            value={<UiBadge variant="gray">Not analyzed</UiBadge>}
+                            value={
+                                isAnalysisFetching ? (
+                                    <UiBadge variant="gray">Loading</UiBadge>
+                                ) : financialRiskLevel ? (
+                                    <PackageRiskBadge risk={financialRiskLevel} />
+                                ) : (
+                                    <UiBadge variant="gray">Not analyzed</UiBadge>
+                                )
+                            }
                         />
                     </div>
                 </>
@@ -129,21 +166,14 @@ export function TourPackageDetailPage() {
 function SummaryCard({
                          label,
                          value,
-                         mutedValue,
                      }: {
     label: string;
     value: React.ReactNode;
-    mutedValue?: string;
 }) {
     return (
         <div className="flex min-h-[54px] items-center justify-between rounded-lg border border-slate-200 bg-white px-4 shadow-sm">
             <span className="text-xs text-slate-400">{label}</span>
-            <span className="text-sm font-semibold text-slate-800">
-                {value}
-                {mutedValue && (
-                    <span className="font-medium text-slate-300">{mutedValue}</span>
-                )}
-            </span>
+            <span className="text-sm font-semibold text-slate-800">{value}</span>
         </div>
     );
 }

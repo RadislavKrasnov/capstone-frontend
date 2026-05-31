@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { AlertTriangle, CheckCircle } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -57,6 +57,22 @@ function slugify(value: string) {
         .replace(/^-|-$/g, '');
 }
 
+function buildFormValues(tourPackage: TourPackage): TourPackageFormValues {
+    return {
+        title: tourPackage.title,
+        slug: tourPackage.slug,
+        description: tourPackage.description ?? '',
+        destinationCountry: tourPackage.destinationCountry ?? '',
+        destinationCity: tourPackage.destinationCity ?? '',
+        durationDays: tourPackage.durationDays,
+        expectedGroupSize: tourPackage.expectedGroupSize,
+        sellingPricePerPerson: Number(tourPackage.sellingPricePerPerson),
+        currencyCode: tourPackage.currencyCode,
+        status: tourPackage.status,
+        internalNotes: tourPackage.internalNotes ?? '',
+    };
+}
+
 type TourPackageOverviewFormProps = {
     tourPackage: TourPackage;
 };
@@ -65,6 +81,7 @@ export function TourPackageOverviewForm({
                                             tourPackage,
                                         }: TourPackageOverviewFormProps) {
     const [serverError, setServerError] = useState<string | null>(null);
+    const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const [savedAt, setSavedAt] = useState(tourPackage.updatedAt);
 
     const [updateTourPackage, { isLoading }] = useUpdateTourPackageMutation();
@@ -74,26 +91,21 @@ export function TourPackageOverviewForm({
         handleSubmit,
         setValue,
         watch,
+        reset,
         formState: { errors, isDirty },
     } = useForm<TourPackageFormValues>({
         resolver: zodResolver(tourPackageSchema),
-        defaultValues: {
-            title: tourPackage.title,
-            slug: tourPackage.slug,
-            description: tourPackage.description ?? '',
-            destinationCountry: tourPackage.destinationCountry ?? '',
-            destinationCity: tourPackage.destinationCity ?? '',
-            durationDays: tourPackage.durationDays,
-            expectedGroupSize: tourPackage.expectedGroupSize,
-            sellingPricePerPerson: Number(tourPackage.sellingPricePerPerson),
-            currencyCode: tourPackage.currencyCode,
-            status: tourPackage.status,
-            internalNotes: tourPackage.internalNotes ?? '',
-        },
+        defaultValues: buildFormValues(tourPackage),
     });
+
+    useEffect(() => {
+        reset(buildFormValues(tourPackage));
+        setSavedAt(tourPackage.updatedAt);
+    }, [reset, tourPackage]);
 
     const title = watch('title');
     const description = watch('description') ?? '';
+    const currentStatus = watch('status');
 
     const generatedSlug = useMemo(() => slugify(title), [title]);
 
@@ -102,10 +114,12 @@ export function TourPackageOverviewForm({
             shouldDirty: true,
             shouldValidate: true,
         });
+        setSuccessMessage(null);
     };
 
     const onSubmit = async (values: TourPackageFormValues) => {
         setServerError(null);
+        setSuccessMessage(null);
 
         try {
             const updatedPackage = await updateTourPackage({
@@ -119,13 +133,15 @@ export function TourPackageOverviewForm({
                     durationDays: values.durationDays,
                     expectedGroupSize: values.expectedGroupSize,
                     sellingPricePerPerson: values.sellingPricePerPerson,
-                    currencyCode: values.currencyCode,
+                    currencyCode: values.currencyCode.trim().toUpperCase(),
                     status: values.status,
                     internalNotes: values.internalNotes?.trim() || undefined,
                 },
             }).unwrap();
 
+            reset(buildFormValues(updatedPackage));
             setSavedAt(updatedPackage.updatedAt);
+            setSuccessMessage('Package was updated successfully.');
         } catch (error) {
             setServerError(getErrorMessage(error));
         }
@@ -146,10 +162,17 @@ export function TourPackageOverviewForm({
                     </p>
                 </div>
 
-                <PackageStatusBadge status={tourPackage.status} />
+                <PackageStatusBadge status={currentStatus} />
             </div>
 
             <div className="space-y-6 px-6 py-5">
+                {successMessage && (
+                    <div className="flex items-start gap-2 rounded-lg border border-green-100 bg-green-50 px-3 py-2 text-sm text-green-700">
+                        <CheckCircle size={15} className="mt-0.5 shrink-0" />
+                        <span>{successMessage}</span>
+                    </div>
+                )}
+
                 {serverError && (
                     <div className="flex items-start gap-2 rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-700">
                         <AlertTriangle size={15} className="mt-0.5 shrink-0" />
@@ -160,7 +183,9 @@ export function TourPackageOverviewForm({
                 <div className="grid grid-cols-2 gap-5">
                     <FormField label="Title" error={errors.title?.message}>
                         <input
-                            {...register('title')}
+                            {...register('title', {
+                                onChange: () => setSuccessMessage(null),
+                            })}
                             className="form-input h-10"
                             placeholder="Bali Cultural Immersion"
                         />
@@ -173,7 +198,9 @@ export function TourPackageOverviewForm({
                     >
                         <div className="flex gap-2">
                             <input
-                                {...register('slug')}
+                                {...register('slug', {
+                                    onChange: () => setSuccessMessage(null),
+                                })}
                                 className="form-input h-10 font-mono text-xs"
                                 placeholder="bali-cultural-immersion"
                             />
@@ -196,7 +223,9 @@ export function TourPackageOverviewForm({
                         error={errors.destinationCountry?.message}
                     >
                         <input
-                            {...register('destinationCountry')}
+                            {...register('destinationCountry', {
+                                onChange: () => setSuccessMessage(null),
+                            })}
                             className="form-input h-10"
                             placeholder="Indonesia"
                         />
@@ -207,7 +236,9 @@ export function TourPackageOverviewForm({
                         error={errors.destinationCity?.message}
                     >
                         <input
-                            {...register('destinationCity')}
+                            {...register('destinationCity', {
+                                onChange: () => setSuccessMessage(null),
+                            })}
                             className="form-input h-10"
                             placeholder="Bali"
                         />
@@ -220,7 +251,10 @@ export function TourPackageOverviewForm({
                             <input
                                 type="number"
                                 min={1}
-                                {...register('durationDays', { valueAsNumber: true })}
+                                {...register('durationDays', {
+                                    valueAsNumber: true,
+                                    onChange: () => setSuccessMessage(null),
+                                })}
                                 className="form-input h-10 pr-12"
                             />
                             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">
@@ -239,6 +273,7 @@ export function TourPackageOverviewForm({
                                 min={1}
                                 {...register('expectedGroupSize', {
                                     valueAsNumber: true,
+                                    onChange: () => setSuccessMessage(null),
                                 })}
                                 className="form-input h-10 pr-11"
                             />
@@ -262,6 +297,7 @@ export function TourPackageOverviewForm({
                                 step="0.01"
                                 {...register('sellingPricePerPerson', {
                                     valueAsNumber: true,
+                                    onChange: () => setSuccessMessage(null),
                                 })}
                                 className="form-input h-10 pl-8"
                             />
@@ -270,14 +306,21 @@ export function TourPackageOverviewForm({
 
                     <FormField label="Currency" error={errors.currencyCode?.message}>
                         <input
-                            {...register('currencyCode')}
+                            {...register('currencyCode', {
+                                onChange: () => setSuccessMessage(null),
+                            })}
                             className="form-input h-10 uppercase"
                             maxLength={3}
                         />
                     </FormField>
 
                     <FormField label="Status" error={errors.status?.message}>
-                        <select {...register('status')} className="form-input h-10">
+                        <select
+                            {...register('status', {
+                                onChange: () => setSuccessMessage(null),
+                            })}
+                            className="form-input h-10"
+                        >
                             <option value="DRAFT">DRAFT</option>
                             <option value="ANALYZED">ANALYZED</option>
                             <option value="PUBLISHED">PUBLISHED</option>
@@ -293,7 +336,9 @@ export function TourPackageOverviewForm({
                         error={errors.description?.message}
                     >
                         <textarea
-                            {...register('description')}
+                            {...register('description', {
+                                onChange: () => setSuccessMessage(null),
+                            })}
                             rows={4}
                             maxLength={500}
                             className="form-input resize-none"
@@ -311,7 +356,9 @@ export function TourPackageOverviewForm({
                     error={errors.internalNotes?.message}
                 >
                     <textarea
-                        {...register('internalNotes')}
+                        {...register('internalNotes', {
+                            onChange: () => setSuccessMessage(null),
+                        })}
                         rows={3}
                         className="form-input resize-none"
                         placeholder="Internal comments, reminders, or context for your team..."

@@ -1,5 +1,6 @@
 import { baseApi } from '../../../shared/api/baseApi';
 import type {
+    AnalysisDashboardResponse,
     CreateTourPackageRequest,
     DeleteTourPackageArgs,
     GetTourPackagesRequest,
@@ -76,12 +77,20 @@ export const tourPackagesApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: [{ type: 'TourPackage', id: 'LIST' }],
         }),
+
+        getLatestPackageAnalysis: builder.query<AnalysisDashboardResponse, string>({
+            query: (uuid) => ({
+                url: `/tour-packages/${uuid}/analysis/latest`,
+                method: 'GET',
+            }),
+        }),
     }),
 });
 
 export const {
     useGetTourPackagesQuery,
     useGetTourPackageQuery,
+    useGetLatestPackageAnalysisQuery,
     useCreateTourPackageMutation,
     useUpdateTourPackageMutation,
     useDeleteTourPackageMutation,
