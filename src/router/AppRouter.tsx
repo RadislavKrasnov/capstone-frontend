@@ -11,6 +11,7 @@ import { RequireRole } from '../features/auth/components/RequireRole';
 import { AgencyUsersPage } from '../features/users/pages/AgencyUsersPage';
 import { TourPackagesPage } from '../features/tour-packages/pages/TourPackagesPage';
 import { SuppliersPage } from '../features/suppliers/pages/SuppliersPage';
+import { TourPackageDetailPage } from '../features/tour-packages/pages/TourPackageDetailPage';
 
 function PlaceholderPage({ title }: { title: string }) {
     const { t } = useTranslation();
@@ -62,10 +63,7 @@ export function AppRouter() {
                 }
             >
                 <Route path="/packages" element={<TourPackagesPage />} />
-                <Route
-                    path="/packages/:uuid"
-                    element={<PlaceholderPage title="Package Detail" />}
-                />
+                <Route path="/packages/:uuid" element={<TourPackageDetailPage />} />
                 <Route path="/suppliers" element={<SuppliersPage />} />
                 <Route
                     path="/analysis-settings"
