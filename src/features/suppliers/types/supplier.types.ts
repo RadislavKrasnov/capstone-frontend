@@ -4,9 +4,17 @@ import type { PaginatedResponse } from '../../../shared/types/pagination.types';
 export type SupplierType =
     | 'HOTEL'
     | 'TRANSPORT'
+    | 'GUIDE'
+    | 'ACTIVITY_PROVIDER'
+    | 'RESTAURANT'
+    | 'OTHER';
+
+export type SupplierUiType =
+    | 'HOTEL'
+    | 'TRANSPORT'
+    | 'GUIDE'
     | 'ACTIVITY'
     | 'RESTAURANT'
-    | 'GUIDE'
     | 'OTHER';
 
 export type Supplier = {

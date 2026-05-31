@@ -10,7 +10,7 @@ const optionalEmail = z
 
 export const supplierSchema = z.object({
     name: z.string().trim().min(1, 'Supplier name is required').max(255),
-    type: z.enum(['HOTEL', 'TRANSPORT', 'ACTIVITY', 'RESTAURANT', 'GUIDE', 'OTHER']),
+    type: z.enum(['HOTEL', 'TRANSPORT', 'GUIDE', 'ACTIVITY', 'RESTAURANT', 'OTHER']),
     contactEmail: optionalEmail,
     contactPhone: z.string().trim().max(100).optional(),
 });

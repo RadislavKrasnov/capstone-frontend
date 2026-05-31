@@ -14,16 +14,12 @@ import {
     useCreateSupplierMutation,
     useUpdateSupplierMutation,
 } from '../api/suppliersApi';
-import type { Supplier, SupplierType } from '../types/supplier.types';
-
-const supplierTypes: SupplierType[] = [
-    'HOTEL',
-    'TRANSPORT',
-    'ACTIVITY',
-    'RESTAURANT',
-    'GUIDE',
-    'OTHER',
-];
+import type { Supplier } from '../types/supplier.types';
+import {
+    SUPPLIER_UI_TYPES,
+    mapSupplierTypeToBackend,
+    mapSupplierTypeToUi,
+} from '../types/supplierType.mapper';
 
 export function getErrorMessage(error: unknown) {
     if (
@@ -79,7 +75,7 @@ export function SupplierForm({
         resolver: zodResolver(supplierSchema),
         defaultValues: {
             name: supplier?.name ?? '',
-            type: supplier?.type ?? 'HOTEL',
+            type: mapSupplierTypeToUi(supplier?.type),
             contactEmail: supplier?.contactEmail ?? '',
             contactPhone: supplier?.contactPhone ?? '',
         },
@@ -90,7 +86,7 @@ export function SupplierForm({
 
         const payload = {
             name: values.name.trim(),
-            type: values.type,
+            type: mapSupplierTypeToBackend(values.type),
             contactEmail: values.contactEmail?.trim() || undefined,
             contactPhone: values.contactPhone?.trim() || undefined,
         };
@@ -138,7 +134,7 @@ export function SupplierForm({
 
             <FormField label="Type" error={errors.type?.message}>
                 <select {...register('type')} className="form-input">
-                    {supplierTypes.map((type) => (
+                    {SUPPLIER_UI_TYPES.map((type) => (
                         <option key={type} value={type}>
                             {type}
                         </option>

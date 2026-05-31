@@ -1,23 +1,28 @@
 import { UiBadge } from '../../../shared/components/UiBadge';
-import type { SupplierType } from '../types/supplier.types';
+import {
+    SUPPLIER_TYPE_LABELS,
+    mapSupplierTypeToUi,
+} from '../types/supplierType.mapper';
+import type { SupplierType, SupplierUiType } from '../types/supplier.types';
 
-const variantByType: Record<SupplierType, 'blue' | 'violet' | 'green' | 'amber' | 'cyan' | 'gray'> = {
+const variantByType: Record<
+    SupplierUiType,
+    'blue' | 'violet' | 'green' | 'amber' | 'cyan' | 'gray'
+> = {
     HOTEL: 'blue',
     TRANSPORT: 'violet',
+    GUIDE: 'cyan',
     ACTIVITY: 'green',
     RESTAURANT: 'amber',
-    GUIDE: 'cyan',
     OTHER: 'gray',
 };
 
 export function SupplierTypeBadge({ type }: { type?: SupplierType | null }) {
-    if (!type) {
-        return <UiBadge variant="gray">OTHER</UiBadge>;
-    }
+    const uiType = mapSupplierTypeToUi(type);
 
     return (
-        <UiBadge variant={variantByType[type]}>
-            {type}
+        <UiBadge variant={variantByType[uiType]}>
+            {SUPPLIER_TYPE_LABELS[uiType]}
         </UiBadge>
     );
 }
