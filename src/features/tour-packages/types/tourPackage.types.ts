@@ -26,6 +26,7 @@ export type TourPackage = {
 export type GetTourPackagesRequest = {
     page?: number;
     limit?: number;
+    agencyId?: number;
 };
 
 export type GetTourPackagesResponse = PaginatedResponse<TourPackage>;

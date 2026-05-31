@@ -12,14 +12,15 @@ export const tourPackagesApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
         getTourPackages: builder.query<
             GetTourPackagesResponse,
-            GetTourPackagesRequest | void
+            GetTourPackagesRequest
         >({
             query: (params) => ({
                 url: '/tour-packages',
                 method: 'GET',
                 params: {
-                    page: params?.page ?? 1,
-                    limit: params?.limit ?? 100,
+                    page: params.page ?? 1,
+                    limit: params.limit ?? 100,
+                    agencyId: params.agencyId,
                 },
             }),
             providesTags: (result) =>

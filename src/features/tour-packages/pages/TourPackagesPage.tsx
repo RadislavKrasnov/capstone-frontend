@@ -8,7 +8,9 @@ import {
     Trash2,
 } from 'lucide-react';
 import { useNavigate } from 'react-router';
+import { useSelector } from 'react-redux';
 
+import type { RootState } from '../../../app/store';
 import { UiButton } from '../../../shared/components/UiButton';
 import { UiModal } from '../../../shared/components/UiModal';
 import {
@@ -65,6 +67,7 @@ function getPackageCode(tourPackage: TourPackage, index: number) {
 
 export function TourPackagesPage() {
     const navigate = useNavigate();
+    const currentUser = useSelector((state: RootState) => state.auth.user);
 
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] =
@@ -81,10 +84,16 @@ export function TourPackagesPage() {
         isFetching,
         isError,
         refetch,
-    } = useGetTourPackagesQuery({
-        page: 1,
-        limit: 100,
-    });
+    } = useGetTourPackagesQuery(
+        {
+            page: 1,
+            limit: 100,
+            agencyId: currentUser?.agencyId,
+        },
+        {
+            skip: !currentUser?.agencyId,
+        },
+    );
 
     const [deleteTourPackage, { isLoading: isDeleting }] =
         useDeleteTourPackageMutation();
@@ -205,6 +214,12 @@ export function TourPackagesPage() {
                     })}
                 </div>
             </div>
+
+            {!currentUser?.agencyId ? (
+                <div className="rounded-lg border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-700">
+                    Agency is missing for the current user. Please sign in again.
+                </div>
+            ) : null}
 
             <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
                 {isLoading ? (
