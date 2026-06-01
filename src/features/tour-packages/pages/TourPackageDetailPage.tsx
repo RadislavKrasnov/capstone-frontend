@@ -27,6 +27,7 @@ import {
 } from '../components/PackageWorkspaceTabs';
 import type { TourPackage } from '../types/tourPackage.types';
 import { PackageItineraryTab } from '../../itinerary/pages/PackageItineraryTab';
+import { PackageCostsTab } from '../../costs/pages/PackageCostsTab';
 
 function getDestination(tourPackage: TourPackage) {
     const parts = [
@@ -248,6 +249,8 @@ export function TourPackageDetailPage() {
                 </>
             ) : activeTab === 'itinerary' ? (
                 <PackageItineraryTab tourPackage={tourPackage} />
+            ) : activeTab === 'costs' ? (
+                <PackageCostsTab tourPackage={tourPackage} />
             ) : (
                 <PlaceholderTab activeTab={activeTab} />
             )}
