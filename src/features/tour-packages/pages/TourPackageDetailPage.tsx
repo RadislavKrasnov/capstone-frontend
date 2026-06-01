@@ -4,7 +4,6 @@ import {
     CalendarDays,
     ChevronRight,
     Clock3,
-    Download,
     Edit2,
     MapPin,
     Send,
@@ -27,6 +26,7 @@ import {
     type PackageWorkspaceTab,
 } from '../components/PackageWorkspaceTabs';
 import type { TourPackage } from '../types/tourPackage.types';
+import { PackageItineraryTab } from '../../itinerary/pages/PackageItineraryTab';
 
 function getDestination(tourPackage: TourPackage) {
     const parts = [
@@ -220,14 +220,14 @@ export function TourPackageDetailPage() {
                             value={
                                 isAnalysisFetching ? (
                                     <span className="text-xs font-medium text-slate-300">
-                                        Loading...
-                                    </span>
+                            Loading...
+                        </span>
                                 ) : grossMarginPercent !== null ? (
                                     <PackageMarginText marginPercent={grossMarginPercent} />
                                 ) : (
                                     <span className="text-xs font-medium text-slate-300">
-                                        Not analyzed
-                                    </span>
+                            Not analyzed
+                        </span>
                                 )
                             }
                         />
@@ -246,6 +246,8 @@ export function TourPackageDetailPage() {
                         />
                     </div>
                 </>
+            ) : activeTab === 'itinerary' ? (
+                <PackageItineraryTab tourPackage={tourPackage} />
             ) : (
                 <PlaceholderTab activeTab={activeTab} />
             )}
