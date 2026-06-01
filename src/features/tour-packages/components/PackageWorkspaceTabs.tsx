@@ -69,8 +69,8 @@ export function PackageWorkspaceTabs({
                                          onTabChange,
                                      }: PackageWorkspaceTabsProps) {
     return (
-        <div className="-mx-6 -mt-6 border-b border-slate-200 bg-white px-6">
-            <div className="flex h-[38px] items-center gap-6">
+        <div className="border-t border-slate-100 bg-white">
+            <div className="flex h-[44px] items-center gap-6">
                 {tabs.map((tab) => {
                     const isActive = activeTab === tab.key;
 

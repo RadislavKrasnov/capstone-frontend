@@ -1,5 +1,15 @@
 import { useState } from 'react';
-import { AlertTriangle, ArrowLeft } from 'lucide-react';
+import {
+    AlertTriangle,
+    CalendarDays,
+    ChevronRight,
+    Clock3,
+    Download,
+    Edit2,
+    MapPin,
+    Send,
+    Users,
+} from 'lucide-react';
 import { useNavigate, useParams } from 'react-router';
 
 import { UiBadge } from '../../../shared/components/UiBadge';
@@ -10,6 +20,7 @@ import {
 } from '../api/tourPackagesApi';
 import { PackageMarginText } from '../components/PackageMarginText';
 import { PackageRiskBadge } from '../components/PackageRiskBadge';
+import { PackageStatusBadge } from '../components/PackageStatusBadge';
 import { TourPackageOverviewForm } from '../components/TourPackageOverviewForm';
 import {
     PackageWorkspaceTabs,
@@ -28,6 +39,18 @@ function getDestination(tourPackage: TourPackage) {
 
 function getPackageCode(tourPackage: TourPackage) {
     return `PKG-${String(tourPackage.id).padStart(3, '0')}`;
+}
+
+function formatDate(value?: string) {
+    if (!value) {
+        return '—';
+    }
+
+    return new Intl.DateTimeFormat('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+    }).format(new Date(value));
 }
 
 export function TourPackageDetailPage() {
@@ -97,23 +120,90 @@ export function TourPackageDetailPage() {
 
     const grossMarginPercent = latestAnalysis?.financial.grossMarginPercent ?? null;
     const financialRiskLevel = latestAnalysis?.financial.financialRiskLevel ?? null;
+    const destination = getDestination(tourPackage);
 
     return (
         <div className="space-y-6">
-            <PackageWorkspaceTabs
-                activeTab={activeTab}
-                onTabChange={setActiveTab}
-            />
+            <div className="-mx-6 -mt-6 border-b border-slate-200 bg-white px-6 pt-4">
+                <div className="flex items-start justify-between gap-4">
+                    <div>
+                        <div className="flex items-center gap-1.5 text-[13px] font-medium text-slate-400">
+                            <button
+                                type="button"
+                                onClick={() => navigate('/packages')}
+                                className="transition hover:text-blue-600"
+                            >
+                                Tour Packages
+                            </button>
+                            <ChevronRight size={13} />
+                            <span className="text-slate-700">
+                                {tourPackage.title}
+                            </span>
+                        </div>
 
-            <div className="flex items-center gap-2">
-                <button
-                    type="button"
-                    onClick={() => navigate('/packages')}
-                    className="inline-flex items-center gap-1 text-xs font-medium text-slate-400 transition hover:text-slate-600"
-                >
-                    <ArrowLeft size={13} />
-                    Back to packages
-                </button>
+                        <div className="mt-4 flex flex-wrap items-center gap-2">
+                            <h1 className="text-[18px] font-semibold leading-tight text-slate-900">
+                                {tourPackage.title}
+                            </h1>
+
+                            <PackageStatusBadge status={tourPackage.status} />
+
+                            {isAnalysisFetching ? (
+                                <UiBadge variant="gray">Loading</UiBadge>
+                            ) : financialRiskLevel ? (
+                                <PackageRiskBadge risk={financialRiskLevel} />
+                            ) : (
+                                <UiBadge variant="gray">Not analyzed</UiBadge>
+                            )}
+                        </div>
+
+                        <div className="mt-2 flex flex-wrap items-center gap-4 text-[12px] text-slate-400">
+                            <span className="inline-flex items-center gap-1">
+                                <MapPin size={13} />
+                                {destination}
+                            </span>
+
+                            <span className="inline-flex items-center gap-1">
+                                <Clock3 size={13} />
+                                {tourPackage.durationDays} days
+                            </span>
+
+                            <span className="inline-flex items-center gap-1">
+                                <Users size={13} />
+                                Max {tourPackage.expectedGroupSize} pax
+                            </span>
+
+                            <span className="inline-flex items-center gap-1">
+                                <CalendarDays size={13} />
+                                Modified {formatDate(tourPackage.updatedAt)}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 pt-8">
+                        <UiButton
+                            variant="secondary"
+                            size="sm"
+                            icon={<Edit2 size={13} />}
+                        >
+                            Edit
+                        </UiButton>
+
+                        <UiButton
+                            size="sm"
+                            icon={<Send size={13} />}
+                        >
+                            Publish
+                        </UiButton>
+                    </div>
+                </div>
+
+                <div className="mt-5">
+                    <PackageWorkspaceTabs
+                        activeTab={activeTab}
+                        onTabChange={setActiveTab}
+                    />
+                </div>
             </div>
 
             {activeTab === 'overview' ? (
@@ -123,7 +213,7 @@ export function TourPackageDetailPage() {
                     <div className="grid max-w-[980px] grid-cols-4 gap-3">
                         <SummaryCard label="Package ID" value={getPackageCode(tourPackage)} />
 
-                        <SummaryCard label="Destination" value={getDestination(tourPackage)} />
+                        <SummaryCard label="Destination" value={destination} />
 
                         <SummaryCard
                             label="Gross Margin"
