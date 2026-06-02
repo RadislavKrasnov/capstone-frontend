@@ -18,6 +18,9 @@ export type TourPackage = {
     currencyCode: string;
     status: PackageStatus;
     internalNotes?: string | null;
+    highlights?: PackageProposalItem[];
+    inclusions?: PackageProposalItem[];
+    exclusions?: PackageProposalItem[];
     agency?: Pick<AuthAgency, 'id' | 'uuid' | 'name' | 'slug'>;
     createdAt: string;
     updatedAt: string;
@@ -111,4 +114,12 @@ export type AnalysisDashboardResponse = {
             cappedAt: number;
         }>;
     };
+};
+
+export type PackageProposalItem = {
+    id: number;
+    uuid: string;
+    packageId: number;
+    text: string;
+    displayOrder: number;
 };

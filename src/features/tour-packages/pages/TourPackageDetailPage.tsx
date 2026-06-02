@@ -10,6 +10,7 @@ import {
     Users,
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router';
+import { PackageContentTab } from './PackageContentTab';
 
 import { UiBadge } from '../../../shared/components/UiBadge';
 import { UiButton } from '../../../shared/components/UiButton';
@@ -251,6 +252,8 @@ export function TourPackageDetailPage() {
                 <PackageItineraryTab tourPackage={tourPackage} />
             ) : activeTab === 'costs' ? (
                 <PackageCostsTab tourPackage={tourPackage} />
+            ) : activeTab === 'content' ? (
+                <PackageContentTab tourPackage={tourPackage} />
             ) : (
                 <PlaceholderTab activeTab={activeTab} />
             )}
