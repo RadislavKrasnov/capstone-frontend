@@ -130,6 +130,24 @@ export function PackageCostsTab({ tourPackage }: PackageCostsTabProps) {
     const revenue = tourPackage.sellingPricePerPerson * groupSize;
     const grossProfit = revenue - totalCost;
     const grossMargin = revenue > 0 ? (grossProfit / revenue) * 100 : 0;
+    const sellingPricePerPerson = Number(tourPackage.sellingPricePerPerson);
+    const breakEvenPricePerPerson = costPerPerson;
+    const priceGapPerPerson = sellingPricePerPerson - breakEvenPricePerPerson;
+
+    const categoryCostStructure = Object.entries(
+        costItems.reduce<Record<string, number>>((acc, item) => {
+            const categoryTotal = calculateLineTotal(item, groupSize, durationDays);
+
+            acc[item.category] = (acc[item.category] ?? 0) + categoryTotal;
+
+            return acc;
+        }, {}),
+    )
+        .map(([category, categoryTotal]) => ({
+            category,
+            sharePercent: totalCost > 0 ? (categoryTotal / totalCost) * 100 : 0,
+        }))
+        .sort((a, b) => b.sharePercent - a.sharePercent);
 
     const openAdd = () => {
         setSelectedCostItem(null);
@@ -364,6 +382,66 @@ export function PackageCostsTab({ tourPackage }: PackageCostsTabProps) {
                         </tbody>
                     </table>
                 )}
+            </div>
+
+            <div className="grid max-w-[1120px] grid-cols-3 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+                <div className="px-5 py-4">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                        Break-even Price / Person
+                    </p>
+                    <p className="mt-2 text-[20px] font-bold leading-tight text-slate-900">
+                        {formatMoney(breakEvenPricePerPerson, currencyCode)}
+                    </p>
+                    <p className="mt-2 text-[12px] text-slate-400">
+                        minimum to cover all costs
+                    </p>
+                </div>
+
+                <div className="border-l border-slate-100 px-5 py-4">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                        Selling Price / Person
+                    </p>
+                    <p className="mt-2 text-[20px] font-bold leading-tight text-slate-900">
+                        {formatMoney(sellingPricePerPerson, currencyCode)}
+                    </p>
+                    <p
+                        className={[
+                            'mt-2 text-[12px]',
+                            priceGapPerPerson >= 0 ? 'text-green-600' : 'text-red-500',
+                        ].join(' ')}
+                    >
+                        {formatMoney(Math.abs(priceGapPerPerson), currencyCode)}{' '}
+                        {priceGapPerPerson >= 0 ? 'above break-even' : 'below break-even'}
+                    </p>
+                </div>
+
+                <div className="border-l border-slate-100 px-5 py-4">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                        Cost Structure
+                    </p>
+
+                    {categoryCostStructure.length === 0 ? (
+                        <p className="mt-3 text-[12px] text-slate-400">
+                            No cost items yet
+                        </p>
+                    ) : (
+                        <div className="mt-3 flex flex-wrap gap-2">
+                            {categoryCostStructure.slice(0, 5).map((item) => (
+                                <span
+                                    key={item.category}
+                                    className="inline-flex items-center gap-1.5"
+                                >
+                                    <CostCategoryBadge
+                                        category={item.category as CostItem['category']}
+                                    />
+                                    <span className="text-xs font-medium text-slate-400">
+                                        {item.sharePercent.toFixed(0)}%
+                                    </span>
+                                </span>
+                            ))}
+                        </div>
+                    )}
+                </div>
             </div>
 
             {(modal === 'add' || modal === 'edit') && (
