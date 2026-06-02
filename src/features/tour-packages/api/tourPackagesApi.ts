@@ -84,6 +84,17 @@ export const tourPackagesApi = baseApi.injectEndpoints({
                 method: 'GET',
             }),
         }),
+
+        runPackageAnalysis: builder.mutation<AnalysisDashboardResponse, string>({
+            query: (uuid) => ({
+                url: `/tour-packages/${uuid}/analyze`,
+                method: 'POST',
+            }),
+            invalidatesTags: [
+                { type: 'TourPackage', id: 'LIST' },
+                { type: 'Analysis', id: 'LIST' },
+            ],
+        }),
     }),
 });
 
@@ -91,6 +102,7 @@ export const {
     useGetTourPackagesQuery,
     useGetTourPackageQuery,
     useGetLatestPackageAnalysisQuery,
+    useRunPackageAnalysisMutation,
     useCreateTourPackageMutation,
     useUpdateTourPackageMutation,
     useDeleteTourPackageMutation,

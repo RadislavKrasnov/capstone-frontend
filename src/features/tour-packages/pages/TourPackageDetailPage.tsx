@@ -29,6 +29,7 @@ import {
 import type { TourPackage } from '../types/tourPackage.types';
 import { PackageItineraryTab } from '../../itinerary/pages/PackageItineraryTab';
 import { PackageCostsTab } from '../../costs/pages/PackageCostsTab';
+import { PackageAnalysisTab } from '../../analysis/pages/PackageAnalysisTab';
 
 function getDestination(tourPackage: TourPackage) {
     const parts = [
@@ -72,6 +73,7 @@ export function TourPackageDetailPage() {
     const {
         data: latestAnalysis,
         isFetching: isAnalysisFetching,
+        refetch: refetchLatestAnalysis,
     } = useGetLatestPackageAnalysisQuery(uuid ?? '', {
         skip: !uuid,
     });
@@ -254,6 +256,13 @@ export function TourPackageDetailPage() {
                 <PackageCostsTab tourPackage={tourPackage} />
             ) : activeTab === 'content' ? (
                 <PackageContentTab tourPackage={tourPackage} />
+            ) : activeTab === 'analysis' ? (
+                <PackageAnalysisTab
+                    tourPackage={tourPackage}
+                    latestAnalysis={latestAnalysis}
+                    isAnalysisFetching={isAnalysisFetching}
+                    onAnalysisUpdated={refetchLatestAnalysis}
+                />
             ) : (
                 <PlaceholderTab activeTab={activeTab} />
             )}
