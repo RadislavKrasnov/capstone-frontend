@@ -15,6 +15,7 @@ import { UiButton } from '../../../shared/components/UiButton';
 import { UiModal } from '../../../shared/components/UiModal';
 import {
     useDeleteTourPackageMutation,
+    useGetLatestPackageAnalysisQuery,
     useGetTourPackagesQuery,
 } from '../api/tourPackagesApi';
 import { PackageMarginText } from '../components/PackageMarginText';
@@ -63,6 +64,53 @@ function getPackageCode(tourPackage: TourPackage, index: number) {
     const id = String(tourPackage.id || index + 1).padStart(3, '0');
 
     return `PKG-${id}`;
+}
+
+function PackageAnalysisSummaryCells({
+                                         tourPackage,
+                                     }: {
+    tourPackage: TourPackage;
+}) {
+    const {
+        data: latestAnalysis,
+        isFetching,
+        isError,
+    } = useGetLatestPackageAnalysisQuery(tourPackage.uuid, {
+        skip: !tourPackage.uuid,
+    });
+
+    const marginPercent = latestAnalysis?.financial.grossMarginPercent ?? null;
+    const riskLevel = latestAnalysis?.financial.financialRiskLevel ?? null;
+
+    return (
+        <>
+            <td className="px-5 py-4">
+                {isFetching ? (
+                    <span className="text-xs font-medium text-slate-300">
+                        Loading...
+                    </span>
+                ) : isError ? (
+                    <PackageMarginText marginPercent={null} />
+                ) : (
+                    <PackageMarginText marginPercent={marginPercent} />
+                )}
+            </td>
+
+            <td className="px-5 py-4">
+                <PackageStatusBadge status={tourPackage.status} />
+            </td>
+
+            <td className="px-5 py-4">
+                {isFetching ? (
+                    <PackageRiskBadge risk={null} />
+                ) : isError ? (
+                    <PackageRiskBadge risk={null} />
+                ) : (
+                    <PackageRiskBadge risk={riskLevel} />
+                )}
+            </td>
+        </>
+    );
 }
 
 export function TourPackagesPage() {
@@ -318,17 +366,7 @@ export function TourPackagesPage() {
                                     )}
                                 </td>
 
-                                <td className="px-5 py-4">
-                                    <PackageMarginText marginPercent={null} />
-                                </td>
-
-                                <td className="px-5 py-4">
-                                    <PackageStatusBadge status={tourPackage.status} />
-                                </td>
-
-                                <td className="px-5 py-4">
-                                    <PackageRiskBadge risk={null} />
-                                </td>
+                                <PackageAnalysisSummaryCells tourPackage={tourPackage} />
 
                                 <td className="px-5 py-4">
                                     <div className="flex justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100">
