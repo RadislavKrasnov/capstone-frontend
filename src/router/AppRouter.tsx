@@ -12,6 +12,7 @@ import { AgencyUsersPage } from '../features/users/pages/AgencyUsersPage';
 import { TourPackagesPage } from '../features/tour-packages/pages/TourPackagesPage';
 import { SuppliersPage } from '../features/suppliers/pages/SuppliersPage';
 import { TourPackageDetailPage } from '../features/tour-packages/pages/TourPackageDetailPage';
+import { AnalysisSettingsPage } from '../features/analysis/pages/AnalysisSettingsPage';
 
 function PlaceholderPage({ title }: { title: string }) {
     const { t } = useTranslation();
@@ -67,7 +68,11 @@ export function AppRouter() {
                 <Route path="/suppliers" element={<SuppliersPage />} />
                 <Route
                     path="/analysis-settings"
-                    element={<PlaceholderPage title={t('pages.analysisSettings')} />}
+                    element={
+                        <RequireRole allowedRoles={['OWNER']}>
+                            <AnalysisSettingsPage />
+                        </RequireRole>
+                    }
                 />
 
                 <Route
