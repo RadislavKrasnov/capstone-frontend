@@ -2,6 +2,7 @@ import { useState } from 'react';
 import {
     AlertTriangle,
     CalendarDays,
+    CheckCircle2,
     ChevronRight,
     Clock3,
     Edit2,
@@ -17,6 +18,7 @@ import { UiButton } from '../../../shared/components/UiButton';
 import {
     useGetLatestPackageAnalysisQuery,
     useGetTourPackageQuery,
+    useUpdateTourPackageMutation,
 } from '../api/tourPackagesApi';
 import { PackageMarginText } from '../components/PackageMarginText';
 import { PackageRiskBadge } from '../components/PackageRiskBadge';
@@ -58,10 +60,38 @@ function formatDate(value?: string) {
     }).format(new Date(value));
 }
 
+function getErrorMessage(error: unknown) {
+    if (
+        typeof error === 'object' &&
+        error !== null &&
+        'data' in error &&
+        typeof error.data === 'object' &&
+        error.data !== null &&
+        'message' in error.data
+    ) {
+        const message = error.data.message;
+
+        if (Array.isArray(message)) {
+            return message.join(', ');
+        }
+
+        if (typeof message === 'string') {
+            return message;
+        }
+    }
+
+    return 'Something went wrong. Please try again.';
+}
+
 export function TourPackageDetailPage() {
     const { uuid } = useParams<{ uuid: string }>();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState<PackageWorkspaceTab>('overview');
+    const [serverError, setServerError] = useState<string | null>(null);
+    const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+    const [updateTourPackage, { isLoading: isPublishing }] =
+        useUpdateTourPackageMutation();
 
     const {
         data: tourPackage,
@@ -127,6 +157,36 @@ export function TourPackageDetailPage() {
     const grossMarginPercent = latestAnalysis?.financial.grossMarginPercent ?? null;
     const financialRiskLevel = latestAnalysis?.financial.financialRiskLevel ?? null;
     const destination = getDestination(tourPackage);
+    const handleEditClick = () => {
+        setServerError(null);
+        setSuccessMessage(null);
+        setActiveTab('overview');
+    };
+
+    const handlePublishClick = async () => {
+        setServerError(null);
+        setSuccessMessage(null);
+
+        if (tourPackage.status === 'PUBLISHED') {
+            setSuccessMessage('Package is already published.');
+            return;
+        }
+
+        try {
+            await updateTourPackage({
+                uuid: tourPackage.uuid,
+                body: {
+                    status: 'PUBLISHED',
+                },
+            }).unwrap();
+
+            await refetch();
+
+            setSuccessMessage('Package was published successfully.');
+        } catch (error) {
+            setServerError(getErrorMessage(error));
+        }
+    };
 
     return (
         <div className="space-y-6">
@@ -191,6 +251,7 @@ export function TourPackageDetailPage() {
                             variant="secondary"
                             size="sm"
                             icon={<Edit2 size={13} />}
+                            onClick={handleEditClick}
                         >
                             Edit
                         </UiButton>
@@ -198,8 +259,14 @@ export function TourPackageDetailPage() {
                         <UiButton
                             size="sm"
                             icon={<Send size={13} />}
+                            onClick={handlePublishClick}
+                            disabled={isPublishing || tourPackage.status === 'PUBLISHED'}
                         >
-                            Publish
+                            {isPublishing
+                                ? 'Publishing...'
+                                : tourPackage.status === 'PUBLISHED'
+                                    ? 'Published'
+                                    : 'Publish'}
                         </UiButton>
                     </div>
                 </div>
@@ -211,6 +278,20 @@ export function TourPackageDetailPage() {
                     />
                 </div>
             </div>
+
+            {successMessage && (
+                <div className="flex items-start gap-2 rounded-lg border border-green-100 bg-green-50 px-4 py-3 text-sm text-green-700">
+                    <CheckCircle2 size={15} className="mt-0.5 shrink-0" />
+                    <span>{successMessage}</span>
+                </div>
+            )}
+
+            {serverError && (
+                <div className="flex items-start gap-2 rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+                    <AlertTriangle size={15} className="mt-0.5 shrink-0" />
+                    <span>{serverError}</span>
+                </div>
+            )}
 
             {activeTab === 'overview' ? (
                 <>
