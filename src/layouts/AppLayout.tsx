@@ -120,20 +120,22 @@ export function AppLayout() {
                             Suppliers
                         </NavLink>
 
-                        <NavLink
-                            to="/analysis-settings"
-                            className={({ isActive }) =>
-                                [
-                                    'flex items-center gap-3 rounded-md px-3 py-2.5 text-[13px] font-medium transition-colors',
-                                    isActive
-                                        ? 'bg-blue-600 text-white shadow-sm'
-                                        : 'text-slate-400 hover:bg-slate-700/80 hover:text-slate-200',
-                                ].join(' ')
-                            }
-                        >
-                            <Settings size={15} />
-                            Analysis Settings
-                        </NavLink>
+                        <CanAccess allowedRoles={['OWNER']}>
+                            <NavLink
+                                to="/analysis-settings"
+                                className={({ isActive }) =>
+                                    [
+                                        'flex items-center gap-3 rounded-md px-3 py-2.5 text-[13px] font-medium transition-colors',
+                                        isActive
+                                            ? 'bg-blue-600 text-white shadow-sm'
+                                            : 'text-slate-400 hover:bg-slate-700/80 hover:text-slate-200',
+                                    ].join(' ')
+                                }
+                            >
+                                <Settings size={15} />
+                                Analysis Settings
+                            </NavLink>
+                        </CanAccess>
 
                         <CanAccess allowedRoles={['OWNER']}>
                             <NavLink

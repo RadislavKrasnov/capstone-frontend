@@ -78,7 +78,7 @@ export const tourPackagesApi = baseApi.injectEndpoints({
             invalidatesTags: [{ type: 'TourPackage', id: 'LIST' }],
         }),
 
-        getLatestPackageAnalysis: builder.query<AnalysisDashboardResponse, string>({
+        getLatestPackageAnalysis: builder.query<AnalysisDashboardResponse | null, string>({
             query: (uuid) => ({
                 url: `/tour-packages/${uuid}/analysis/latest`,
                 method: 'GET',

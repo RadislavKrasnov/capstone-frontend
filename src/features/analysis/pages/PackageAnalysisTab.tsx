@@ -163,11 +163,11 @@ export function PackageAnalysisTab({
         useRunPackageAnalysisMutation();
 
     const criticalCount =
-        latestAnalysis?.recommendations.countsBySeverity.critical ?? 0;
-    const highCount = latestAnalysis?.recommendations.countsBySeverity.high ?? 0;
+        latestAnalysis?.recommendations?.countsBySeverity.critical ?? 0;
+    const highCount = latestAnalysis?.recommendations?.countsBySeverity.high ?? 0;
 
     const businessConclusion = useMemo(() => {
-        const recommendations = latestAnalysis?.recommendations.topRecommendations ?? [];
+        const recommendations = latestAnalysis?.recommendations?.topRecommendations ?? [];
 
         const criticalOrHigh = recommendations.find((recommendation) =>
             ['CRITICAL', 'HIGH'].includes(recommendation.severity),

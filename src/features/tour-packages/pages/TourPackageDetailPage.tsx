@@ -110,6 +110,8 @@ export function TourPackageDetailPage() {
         skip: !uuid,
     });
 
+    const latestCompletedAnalysis = latestAnalysis ?? undefined;
+
     if (!uuid) {
         return (
             <div className="rounded-lg border border-red-100 bg-red-50 px-5 py-4 text-sm text-red-700">
@@ -154,8 +156,8 @@ export function TourPackageDetailPage() {
         );
     }
 
-    const grossMarginPercent = latestAnalysis?.financial.grossMarginPercent ?? null;
-    const financialRiskLevel = latestAnalysis?.financial.financialRiskLevel ?? null;
+    const grossMarginPercent = latestAnalysis?.financial?.grossMarginPercent ?? null;
+    const financialRiskLevel = latestAnalysis?.financial?.financialRiskLevel ?? null;
     const destination = getDestination(tourPackage);
     const handleEditClick = () => {
         setServerError(null);
@@ -342,14 +344,14 @@ export function TourPackageDetailPage() {
             ) : activeTab === 'analysis' ? (
                 <PackageAnalysisTab
                     tourPackage={tourPackage}
-                    latestAnalysis={latestAnalysis}
+                    latestAnalysis={latestCompletedAnalysis}
                     isAnalysisFetching={isAnalysisFetching}
                     onAnalysisUpdated={refetchLatestAnalysis}
                 />
             ) : activeTab === 'recommendations' ? (
                 <PackageRecommendationsTab
                     tourPackage={tourPackage}
-                    latestAnalysis={latestAnalysis}
+                    latestAnalysis={latestCompletedAnalysis}
                     isAnalysisFetching={isAnalysisFetching}
                     onAnalysisUpdated={refetchLatestAnalysis}
                 />

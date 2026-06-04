@@ -287,8 +287,8 @@ export function PackageRecommendationsTab({
         useRunPackageAnalysisMutation();
 
     const recommendations = useMemo(
-        () => latestAnalysis?.recommendations.topRecommendations ?? [],
-        [latestAnalysis?.recommendations.topRecommendations],
+        () => latestAnalysis?.recommendations?.topRecommendations ?? [],
+        [latestAnalysis?.recommendations?.topRecommendations],
     );
 
     const recommendationStatus = (recommendation: AnalysisDashboardRecommendation) =>

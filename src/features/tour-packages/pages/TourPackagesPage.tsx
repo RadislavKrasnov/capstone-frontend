@@ -71,16 +71,20 @@ function PackageAnalysisSummaryCells({
                                      }: {
     tourPackage: TourPackage;
 }) {
+    const shouldLoadLatestAnalysis =
+        !!tourPackage.uuid &&
+        ['ANALYZED', 'PUBLISHED'].includes(tourPackage.status);
+
     const {
         data: latestAnalysis,
         isFetching,
         isError,
     } = useGetLatestPackageAnalysisQuery(tourPackage.uuid, {
-        skip: !tourPackage.uuid,
+        skip: !shouldLoadLatestAnalysis,
     });
 
-    const marginPercent = latestAnalysis?.financial.grossMarginPercent ?? null;
-    const riskLevel = latestAnalysis?.financial.financialRiskLevel ?? null;
+    const marginPercent = latestAnalysis?.financial?.grossMarginPercent ?? null;
+    const riskLevel = latestAnalysis?.financial?.financialRiskLevel ?? null;
 
     return (
         <>

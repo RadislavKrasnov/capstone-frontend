@@ -305,13 +305,18 @@ export function TourPackageOverviewForm({
                     </FormField>
 
                     <FormField label="Currency" error={errors.currencyCode?.message}>
-                        <input
+                        <select
                             {...register('currencyCode', {
                                 onChange: () => setSuccessMessage(null),
                             })}
-                            className="form-input h-10 uppercase"
-                            maxLength={3}
-                        />
+                            className="form-input h-10"
+                        >
+                            {['EUR', 'USD', 'GBP', 'CHF', 'JPY', 'CAD', 'AUD'].map((currency) => (
+                                <option key={currency} value={currency}>
+                                    {currency}
+                                </option>
+                            ))}
+                        </select>
                     </FormField>
 
                     <FormField label="Status" error={errors.status?.message}>
