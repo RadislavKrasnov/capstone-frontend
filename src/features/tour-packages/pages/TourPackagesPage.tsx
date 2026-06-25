@@ -19,7 +19,7 @@ import {
     useGetTourPackagesQuery,
 } from '../api/tourPackagesApi';
 import { PackageMarginText } from '../components/PackageMarginText';
-import { PackageRiskBadge } from '../components/PackageRiskBadge';
+import { PackageQualityBadge } from '../components/PackageQualityBadge';
 import { PackageStatusBadge } from '../components/PackageStatusBadge';
 import {
     TourPackageForm,
@@ -84,7 +84,7 @@ function PackageAnalysisSummaryCells({
     });
 
     const marginPercent = latestAnalysis?.financial?.grossMarginPercent ?? null;
-    const riskLevel = latestAnalysis?.financial?.financialRiskLevel ?? null;
+    const qualityLevel = latestAnalysis?.quality?.qualityLevel ?? null;
 
     return (
         <>
@@ -106,11 +106,11 @@ function PackageAnalysisSummaryCells({
 
             <td className="px-5 py-4">
                 {isFetching ? (
-                    <PackageRiskBadge risk={null} />
+                    <PackageQualityBadge level={null} />
                 ) : isError ? (
-                    <PackageRiskBadge risk={null} />
+                    <PackageQualityBadge level={null} />
                 ) : (
-                    <PackageRiskBadge risk={riskLevel} />
+                    <PackageQualityBadge level={qualityLevel} />
                 )}
             </td>
         </>
