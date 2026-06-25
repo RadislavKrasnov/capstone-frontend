@@ -309,7 +309,7 @@ export function TourPackagesPage() {
                                 'Base Price',
                                 'Margin',
                                 'Status',
-                                'Risk',
+                                'Quality',
                                 '',
                             ].map((header) => (
                                 <th
